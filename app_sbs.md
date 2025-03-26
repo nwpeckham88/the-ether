@@ -301,10 +301,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    import { defineConfig } from 'vite';
 
    export default defineConfig({
-     plugins: [sveltekit()],
-     optimizeDeps: {
-       exclude: ['oslo'] // Required for Lucia as of 2025
-     },
+     plugins: [sveltekit()]
      build: {
        // Split large dependencies into separate chunks
        rollupOptions: {

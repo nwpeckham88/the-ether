@@ -209,7 +209,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
 
 ## C. Phase 1: Project Setup and Foundation (Week 1) ☐
 
-### C.1. Step 1: Initial Project Setup ☐
+### C.1. Step 1: Initial Project Setup ☑️
 1. Create new SvelteKit project ☑️
    ```bash
    # Using the latest SvelteKit CLI command (as of March 2025)
@@ -223,10 +223,14 @@ We'll use the Gitflow workflow to manage our development process. This branching
    # Database
    npm install better-sqlite3 drizzle-orm drizzle-kit
    
-   # Authentication (BetterAuth is recommended as of 2025)
-   npm install betterauth better-sqlite-session
+   # Authentication (Better Auth is recommended as of 2025)
+   npm install better-auth
    
-   # UI Components Skeleton
+   # UI Components (choose one: shadcn-svelte or skeleton)
+   # For shadcn-svelte
+   npx shadcn-svelte@latest init
+   
+   # OR for Skeleton
    npm install @skeletonlabs/skeleton @skeletonlabs/tw-plugin
    
    # Animation
@@ -243,7 +247,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    npm install -D vitest @testing-library/svelte
    ```
    
-3. Set up Gitflow branches ☐
+3. Set up Gitflow branches ☑️
    ```bash
    # Initialize the repository with a meaningful commit message
    git init
@@ -256,15 +260,15 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push -u origin develop
    ```
 
-### C.2. Step 2: Configure Build Tools ☐
-1. Create feature branch ☐
+### C.2. Step 2: Configure Build Tools ☑️
+1. Create feature branch ☑️
    ```bash
    git checkout develop
    git pull --rebase origin develop  # Always pull latest changes with rebase
    git checkout -b feature/build-config
    ```
    
-2. Set up Tailwind configuration (`tailwind.config.js`) ☐
+2. Set up Tailwind configuration (`tailwind.config.js`) ☑️
    ```javascript
    // If using shadcn-svelte, this will be mostly configured during init
    // For Skeleton UI, add the following
@@ -291,7 +295,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    };
    ```
    
-3. Configure Vite for bundle optimization (`vite.config.ts`) ☐
+3. Configure Vite for bundle optimization (`vite.config.ts`) ☑️
    ```typescript
    import { sveltekit } from '@sveltejs/kit/vite';
    import { defineConfig } from 'vite';
@@ -318,7 +322,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    });
    ```
    
-4. Set up TypeScript configuration (`tsconfig.json`) ☐
+4. Set up TypeScript configuration (`tsconfig.json`) ☑️
    ```bash
    # After making changes
    git add tsconfig.json

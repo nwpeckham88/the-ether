@@ -26,11 +26,7 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
-    "moduleResolution": "bundler",
-    "paths": {
-      "$lib": ["./src/lib"],
-      "$lib/*": ["./src/lib/*"]
-    }
+    "moduleResolution": "bundler"
   },
   "include": [
     ".svelte-kit/types/**/$types.d.ts",

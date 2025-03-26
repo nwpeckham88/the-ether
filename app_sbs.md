@@ -326,7 +326,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git commit -m "Build: Configure TypeScript with strict mode and paths"
    ```
    
-5. Merge feature branch using no-fast-forward to preserve history ☐
+5. Merge feature branch using no-fast-forward to preserve history ☑️
    ```bash
    git checkout develop
    git pull --rebase origin develop

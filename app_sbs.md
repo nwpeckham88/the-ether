@@ -1422,36 +1422,404 @@ We'll use the Gitflow workflow to manage our development process. This branching
 
 ### Step 12: Implement Real-time Synchronization
 1. Create feature branch
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git checkout -b feature/realtime-sync
+   ```
+   
 2. Add event handlers for content changes
+   ```typescript
+   // src/lib/stores/ether-content-store.ts
+   import { createStore } from './create-store';
+   import { socket } from '$lib/socket-client';
+
+   const contentStore = createStore([], { sync: true, channel: 'ether-content' });
+
+   socket.on('content-updated', (data) => {
+     contentStore.update((items) => {
+       // Update logic here
+       return items;
+     });
+   });
+
+   export default contentStore;
+   ```
+   
 3. Set up position update broadcasting
+   ```typescript
+   // src/lib/components/ether/content-item.svelte
+   <script lang="ts">
+     import { emitWithRetry } from '$lib/socket-client';
+     
+     function handlePositionChange(x: number, y: number, z: number) {
+       emitWithRetry('position-update', {
+         itemId: item.id,
+         position: { x, y, z }
+       });
+     }
+   </script>
+   ```
+   
 4. Implement user presence indicators
+   ```typescript
+   // src/lib/components/ether/ether-space.svelte
+   <script lang="ts">
+     import { socket } from '$lib/socket-client';
+     
+     let usersPresent = $state([]);
+     
+     socket.on('user-joined', (userId) => {
+       usersPresent = [...usersPresent, userId];
+     });
+   </script>
+   ```
+   
 5. Add conflict resolution for concurrent edits
+   ```typescript
+   // src/lib/stores/ether-content-store.ts
+   import { createStore } from './create-store';
+   import { socket } from '$lib/socket-client';
+
+   const contentStore = createStore([], { sync: true, channel: 'ether-content' });
+
+   socket.on('content-updated', (data) => {
+     contentStore.update((items) => {
+       // Conflict resolution logic here
+       return items;
+     });
+   });
+
+   export default contentStore;
+   ```
+   
 6. Merge feature branch
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git merge --no-ff feature/realtime-sync -m "Merge feature/realtime-sync: Real-time synchronization"
+   git push origin develop
+   git branch -d feature/realtime-sync
+   git push origin --delete feature/realtime-sync
+   ```
 
 ### Step 13: Create Content Management UI
 1. Create feature branch
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git checkout -b feature/content-management-ui
+   ```
+   
 2. Implement speed dial for content creation
+   ```svelte
+   <!-- src/lib/components/ether/speed-dial.svelte -->
+   <script lang="ts">
+     import { createEventDispatcher } from 'svelte';
+     
+     const dispatch = createEventDispatcher();
+     
+     // Using Svelte 5 runes for state
+     let isOpen = $state(false);
+     
+     function toggleOpen() {
+       isOpen = !isOpen;
+     }
+     
+     function addContent(type: string) {
+       dispatch('add', { type });
+       isOpen = false;
+     }
+   </script>
+
+   <div class="speed-dial">
+     <button 
+       class="speed-dial-button"
+       on:click={toggleOpen}
+     >
+       {isOpen ? 'Close' : 'Add Content'}
+     </button>
+     
+     {#if isOpen}
+       <div class="speed-dial-menu">
+         <button on:click={() => addContent('text')}>Text</button>
+         <button on:click={() => addContent('link')}>Link</button>
+         <button on:click={() => addContent('image')}>Image</button>
+         <button on:click={() => addContent('document')}>Document</button>
+       </div>
+     {/if}
+   </div>
+   ```
+   
 3. Add context menu for content items
+   ```svelte
+   <!-- src/lib/components/ether/content-item.svelte -->
+   <script lang="ts">
+     // Using Svelte 5 runes for state
+     let showMenu = $state(false);
+     
+     function toggleContextMenu() {
+       showMenu = !showMenu;
+     }
+     
+     function editItem() {
+       // Edit logic
+       showMenu = false;
+     }
+     
+     function deleteItem() {
+       // Delete logic
+       showMenu = false;
+     }
+   </script>
+
+   <div>
+     <!-- Item content -->
+     <slot />
+     
+     <button on:click={toggleContextMenu} class="context-menu-trigger">⋮</button>
+     
+     {#if showMenu}
+       <div class="context-menu">
+         <button on:click={editItem}>Edit</button>
+         <button on:click={deleteItem}>Delete</button>
+       </div>
+     {/if}
+   </div>
+   ```
+   
 4. Create content editing interface
+   ```svelte
+   <!-- src/lib/components/ether/content-editor.svelte -->
+   <script lang="ts">
+     import { createEventDispatcher } from 'svelte';
+     
+     // Using Svelte 5 runes for props
+     let content = $props(String);
+     let contentType = $props(String);
+     
+     const dispatch = createEventDispatcher();
+     
+     // Using Svelte 5 runes for local state
+     let editedContent = $state(content);
+     
+     function saveChanges() {
+       dispatch('save', { content: editedContent });
+     }
+     
+     function cancel() {
+       dispatch('cancel');
+     }
+   </script>
+
+   <div class="editor">
+     {#if contentType === 'text'}
+       <textarea bind:value={editedContent}></textarea>
+     {:else if contentType === 'link'}
+       <input type="url" bind:value={editedContent} />
+     {/if}
+     
+     <div class="actions">
+       <button on:click={saveChanges}>Save</button>
+       <button on:click={cancel}>Cancel</button>
+     </div>
+   </div>
+   ```
+   
 5. Implement content deletion with confirmation
+   ```typescript
+   // src/lib/components/ether/content-item.svelte
+   <script lang="ts">
+     import { createEventDispatcher } from 'svelte';
+     
+     const dispatch = createEventDispatcher();
+     
+     function deleteItem() {
+       if (confirm('Are you sure you want to delete this item?')) {
+         dispatch('delete', { id: item.id });
+       }
+     }
+   </script>
+   ```
+   
 6. Merge feature branch
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git merge --no-ff feature/content-management-ui -m "Merge feature/content-management-ui: Content management UI"
+   git push origin develop
+   git branch -d feature/content-management-ui
+   git push origin --delete feature/content-management-ui
+   ```
 
 ### Step 14: Prepare Alpha Release
 1. Create release branch
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git checkout -b release/alpha
+   ```
+   
 2. Update version numbers
+   ```json
+   // package.json
+   {
+     "name": "the-ether",
+     "version": "0.1.0-alpha",
+     "private": true,
+     // ... other package.json content
+   }
+   ```
+   
 3. Fix any minor bugs
+   ```typescript
+   // Example bug fix
+   // src/lib/socket-client.ts
+   socket.on('connect_error', (error) => {
+     console.error('Socket connection error:', error);
+     // Implement fallback for offline mode
+   });
+   ```
+   
 4. Update documentation
+   ```markdown
+   <!-- README.md -->
+   # The Ether - Alpha Release (v0.1.0-alpha)
+   
+   A protected local network sharing application built with SvelteKit.
+   
+   ## Features
+   - User authentication with Lucia
+   - 3D space for content placement
+   - Real-time synchronization
+   - Multiple content types (text, links, images, documents)
+   
+   ## Installation
+   ```bash
+   npm install
+   npm run dev
+   ```
+   
+   ## Alpha Release Notes
+   This is an alpha release with core functionality. Some features may be incomplete.
+   
+   ### Known Issues
+   - PDF viewing requires external PDF.js worker configuration
+   - ...
+   ```
+   
 5. Merge release branch
+   ```bash
+   # Merge to main
+   git checkout main
+   git merge --no-ff release/alpha -m "Release v0.1.0-alpha"
+   git tag -a v0.1.0-alpha -m "Alpha Release"
+   git push origin main --tags
+   
+   # Merge back to develop
+   git checkout develop
+   git merge --no-ff release/alpha -m "Merge alpha release back to develop"
+   git push origin develop
+   
+   # Delete the release branch
+   git branch -d release/alpha
+   git push origin --delete release/alpha
+   ```
 
 ## Phase 4: Polish and Optimization (Week 4)
 
 ### Step 15: Optimize Performance
 1. Create feature branch
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git checkout -b feature/performance-optimization
+   ```
+   
 2. Implement lazy loading for components
+   ```typescript
+   // src/lib/utils/lazy-load.ts
+   export async function lazyLoadComponent(path: string) {
+     const component = await import(path);
+     return component.default;
+   }
+   
+   // Usage example in a parent component:
+   // <script>
+   //   import { lazyLoadComponent } from '$lib/utils/lazy-load';
+   //   let DocumentViewer;
+   //   
+   //   onMount(async () => {
+   //     DocumentViewer = await lazyLoadComponent('$lib/components/ether/document-item.svelte');
+   //   });
+   // </script>
+   ```
+   
 3. Set up code splitting and dynamic imports
+   ```javascript
+   // vite.config.js
+   export default defineConfig({
+     plugins: [sveltekit()],
+     build: {
+       rollupOptions: {
+         output: {
+           manualChunks: {
+             'vendor': ['socket.io-client'],
+             'ui': ['@skeletonlabs/skeleton'],
+             'pdf': ['pdfjs-dist']
+           }
+         }
+       }
+     }
+   });
+   ```
+   
 4. Optimize bundle size
+   ```typescript
+   // src/routes/+layout.ts
+   export const prerender = true;
+   export const ssr = true;
+   
+   // Use dynamic imports for non-critical routes
+   // src/components/non-critical-feature.ts
+   const NonCriticalFeature = () => import('./NonCriticalFeature.svelte');
+   ```
+   
 5. Add performance monitoring
+   ```typescript
+   // src/lib/utils/performance-monitor.ts
+   export function logPerformance(label: string) {
+     if (typeof window !== 'undefined') {
+       const now = performance.now();
+       console.log(`${label}: ${now.toFixed(2)}ms`);
+     }
+   }
+   
+   // Usage
+   logPerformance('Component mounted');
+   
+   // For more sophisticated monitoring in production,
+   // consider tools like Web Vitals integration:
+   // import { onCLS, onFID, onLCP } from 'web-vitals';
+   // 
+   // function sendToAnalytics({ name, delta, id }) {
+   //   // Send to your analytics service
+   // }
+   // 
+   // onCLS(sendToAnalytics);
+   // onFID(sendToAnalytics);
+   // onLCP(sendToAnalytics);
+   ```
+   
 6. Merge feature branch
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git merge --no-ff feature/performance-optimization -m "Merge feature/performance-optimization: Performance optimizations"
+   git push origin develop
+   git branch -d feature/performance-optimization
+   git push origin --delete feature/performance-optimization
+   ```
 
 ### Step 16: Enhance User Experience
 1. Create feature branch

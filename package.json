@@ -28,5 +28,6 @@
     "db:generate": "drizzle-kit generate:sqlite",
     "db:migrate": "drizzle-kit migrate:sqlite",
     "db:studio": "drizzle-kit studio"
-  }
+  },
+  "type": "module"
 }

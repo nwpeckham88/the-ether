@@ -1130,14 +1130,14 @@ We'll use the Gitflow workflow to manage our development process. This branching
        aria-label="Ether Space"
      >
        <div bind:this={element} class="w-full h-full fade-in">
-         {#each items as item (item.id)}
-           <div
-             class="absolute"
-             style="transform: translate3d({item.positionX}px, {item.positionY}px, {item.positionZ}px);"
-           >
-             <slot {item} />
-           </div>
-         {/each}
+     {#each items as item (item.id)}
+       <div
+         class="absolute"
+         style="transform: translate3d({item.positionX}px, {item.positionY}px, {item.positionZ}px);"
+       >
+         <slot {item} />
+       </div>
+     {/each}
        </div>
      </div>
    </div>
@@ -1324,7 +1324,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
      </div>
      
      <div class="w-full h-full border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
-       <EtherSpace {spaceId} {items}>
+   <EtherSpace {spaceId} {items}>
          <svelte:fragment let:item>
            <ContentItem 
              id={item.id}
@@ -1336,7 +1336,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
              on:positionchange={handlePositionChange}
            />
          </svelte:fragment>
-       </EtherSpace>
+   </EtherSpace>
      </div>
    </div>
    ```
@@ -2061,3 +2061,261 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git branch -d feature/testing-debugging
    git push origin --delete feature/testing-debugging
    ```
+
+## F. Phase 4: WebSocket Integration and Real-time Updates ☑️
+
+### F.1. Step 13: WebSocket Integration with Socket.io ☑️
+1. Create feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git checkout -b feature/websocket-integration
+   ```
+   
+2. Install Socket.io ☑️
+   ```bash
+   npm install socket.io socket.io-client
+   ```
+   
+3. Create socket server setup ☑️
+   ```typescript
+   // src/lib/server/socket.ts
+   import { Server } from 'socket.io';
+   import type { Server as HTTPServer } from 'http';
+   import type { EtherContentPosition } from '$lib/types/ether-content';
+   
+   export function setupSocketServer(server: HTTPServer) {
+     const io = new Server(server);
+     
+     io.on('connection', (socket) => {
+       console.log('Client connected:', socket.id);
+       
+       // Handle joining a space
+       socket.on('space:join', (data: { spaceId: string, user: any }) => {
+         const { spaceId, user } = data;
+         
+         // Join the space's room
+         socket.join(`space:${spaceId}`);
+         
+         // Notify others in the space
+         socket.to(`space:${spaceId}`).emit('user:joined', {
+           userId: user.id,
+           username: user.name,
+           socketId: socket.id
+         });
+         
+         console.log(`User ${user.name} joined space ${spaceId}`);
+       });
+       
+       // Handle leaving a space
+       socket.on('space:leave', (data: { spaceId: string }) => {
+         const { spaceId } = data;
+         
+         // Leave the space's room
+         socket.leave(`space:${spaceId}`);
+         
+         // Notify others (the client would need to also send user info here in a real app)
+         socket.to(`space:${spaceId}`).emit('user:left', {
+           socketId: socket.id
+         });
+       });
+       
+       // Handle content movement
+       socket.on('content:move', (data: { 
+         spaceId: string, 
+         contentId: string, 
+         position: EtherContentPosition 
+       }) => {
+         const { spaceId, contentId, position } = data;
+         
+         // Broadcast to others in the space
+         socket.to(`space:${spaceId}`).emit('content:moved', {
+           contentId,
+           position
+         });
+       });
+       
+       // Handle new content
+       socket.on('content:add', (data: { spaceId: string, content: any }) => {
+         const { spaceId, content } = data;
+         
+         // Broadcast to others in the space
+         socket.to(`space:${spaceId}`).emit('content:added', {
+           content
+         });
+       });
+       
+       // Handle disconnection
+       socket.on('disconnect', () => {
+         console.log('Client disconnected:', socket.id);
+       });
+     });
+     
+     return io;
+   }
+   ```
+   
+4. Create client-side socket connection utility ☑️
+   ```typescript
+   // src/lib/socket-client.ts
+   import { io } from 'socket.io-client';
+   import { browser } from '$app/environment';
+   
+   let socket: any = null;
+   
+   export function initSocket() {
+     if (!browser) return null;
+     
+     if (!socket) {
+       // Connect to the server
+       const url = import.meta.env.VITE_SOCKET_URL || '';
+       socket = io(url, {
+         transports: ['websocket'],
+         autoConnect: true
+       });
+       
+       // Setup event listeners
+       socket.on('connect', () => {
+         console.log('Connected to socket server', socket.id);
+       });
+       
+       socket.on('disconnect', () => {
+         console.log('Disconnected from socket server');
+       });
+       
+       socket.on('error', (error: any) => {
+         console.error('Socket error:', error);
+       });
+     }
+     
+     return socket;
+   }
+   
+   export function getSocket() {
+     return socket;
+   }
+   
+   export function disconnectSocket() {
+     if (socket) {
+       socket.disconnect();
+       socket = null;
+     }
+   }
+   ```
+   
+5. Integrate with server hooks ☑️
+   ```typescript
+   // src/hooks.server.ts
+   import { setupSocketServer } from '$lib/server/socket';
+   import type { Handle } from '@sveltejs/kit';
+   
+   export const handle: Handle = async ({ event, resolve }) => {
+     // ... existing authentication code ...
+     
+     const response = await resolve(event);
+     return response;
+   };
+   
+   // Attach Socket.io to the server
+   if (import.meta.env.PROD) {
+     // Only in production, as dev server works differently
+     const { server } = await import('$app/server');
+     setupSocketServer(server);
+   }
+   ```
+   
+6. Update EtherSpace component for real-time updates ☑️
+   
+7. Merge feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git merge --no-ff feature/websocket-integration -m "Merge feature/websocket-integration: Real-time updates with Socket.io"
+   git push origin develop
+   git branch -d feature/websocket-integration
+   git push origin --delete feature/websocket-integration
+   ```
+
+### F.2. Step 14: Tailwind CSS v4 Vite Plugin Integration ☑️
+1. Create feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git checkout -b feature/tailwind-vite-plugin
+   ```
+   
+2. Install the Tailwind CSS v4 Vite plugin ☑️
+   ```bash
+   npm install @tailwindcss/vite -D
+   ```
+   
+3. Update the Vite configuration ☑️
+   ```javascript
+   // vite.config.js
+   import { defineConfig } from 'vite';
+   import { sveltekit } from '@sveltejs/kit/vite';
+   import tailwindcss from '@tailwindcss/vite';
+   
+   export default defineConfig({
+     plugins: [
+       tailwindcss(),
+       sveltekit()
+     ],
+     // ... rest of configuration
+   });
+   ```
+   
+4. Remove PostCSS plugin configuration ☑️
+   ```javascript
+   // postcss.config.js
+   export default {
+     plugins: {
+       autoprefixer: {},
+     },
+   };
+   ```
+   
+5. Fix component styling ☑️
+   ```svelte
+   <!-- src/lib/components/ether/ether-space.svelte -->
+   <!-- ... existing code ... -->
+   
+   <style>
+     .ether-space {
+       position: relative;
+       width: 100%;
+       height: 100%;
+       overflow: hidden;
+       background-color: var(--color-background-alt);
+       background-image: 
+         linear-gradient(rgba(150, 150, 150, 0.1) 1px, transparent 1px),
+         linear-gradient(90deg, rgba(150, 150, 150, 0.1) 1px, transparent 1px);
+       background-size: 20px 20px;
+     }
+     
+     /* ... rest of styles ... */
+   </style>
+   ```
+   
+6. Confirm app.css uses the proper import syntax ☑️
+   ```css
+   /* src/app.css */
+   @import "tailwindcss";
+   
+   /* Custom global styles */
+   /* ... */
+   ```
+   
+7. Merge feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git merge --no-ff feature/tailwind-vite-plugin -m "Merge feature/tailwind-vite-plugin: Switch to Tailwind CSS v4 Vite plugin"
+   git push origin develop
+   git branch -d feature/tailwind-vite-plugin
+   git push origin --delete feature/tailwind-vite-plugin
+   ```
+
+### F.3. Step 15: Keyboard Navigation Enhancement
+
+// ... continue with implementation steps ...

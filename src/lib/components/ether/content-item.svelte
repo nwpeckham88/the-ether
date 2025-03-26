@@ -84,10 +84,19 @@
 
 <div
   bind:this={element}
+  role="button"
+  tabindex="0"
   class="absolute cursor-grab bg-white rounded-md shadow-md p-4 select-none transition-opacity duration-300
         {isDragging ? 'cursor-grabbing z-10 shadow-lg' : ''}"
   style="transform: translate3d({positionX}px, {positionY}px, {positionZ}px)"
   on:mousedown={handleDragStart}
+  on:keydown={(e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      // Treat Enter or Space as mousedown for accessibility
+      handleDragStart(e as unknown as MouseEvent);
+    }
+  }}
+  aria-label={title || 'Draggable content item'}
 >
   {#if title}
     <h3 class="font-medium mb-1">{title}</h3>

@@ -1,6 +1,6 @@
 <script lang="ts">
   // Using Svelte 5 runes for reactivity
-  let isLoggedIn = $props(Boolean);
+  let { isLoggedIn = false } = $props<{ isLoggedIn?: boolean }>();
 </script>
 
 <nav class="flex flex-col gap-4 p-4">

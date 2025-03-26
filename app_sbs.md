@@ -19,7 +19,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push -u origin develop
    ```
 
-2. Optional: Install git-flow extension for convenience ☐
+2. Optional: Install git-flow extension for convenience ☑️
    ```bash
    # On macOS
    brew install git-flow
@@ -31,20 +31,20 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git flow init
    ```
 
-### B.2. Branching Strategy ☐
+### B.2. Branching Strategy ☑️
 
-1. **Main Branches**: ☐
+1. **Main Branches**: ☑️
    - `main`: Production code only, contains the official release history
    - `develop`: Integration branch for features, contains pre-production code
 
-2. **Supporting Branches**: ☐
+2. **Supporting Branches**: ☑️
    - `feature/*`: For new feature development (branched from and merged back to `develop`)
    - `release/*`: For preparing new production releases (branched from `develop`, merged to both `develop` and `main`)
    - `hotfix/*`: For urgent fixes to production code (branched from `main`, merged to both `develop` and `main`)
 
-### B.3. Gitflow Best Practices ☐
+### B.3. Gitflow Best Practices ☑️
 
-1. **Commit Best Practices**: ☐
+1. **Commit Best Practices**: ☑️
    - Make atomic, focused commits (one logical change per commit)
    - Write meaningful commit messages with a clear structure:
      ```
@@ -62,7 +62,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    - Use `git commit --amend` for small fixes to your most recent commit
    - Use `git rebase -i` to clean up commits before pushing a feature
 
-2. **Merging Best Practices**: ☐
+2. **Merging Best Practices**: ☑️
    - Always use `--no-ff` when merging feature branches to preserve history:
      ```bash
      git checkout develop
@@ -71,26 +71,26 @@ We'll use the Gitflow workflow to manage our development process. This branching
    - This creates a merge commit even when a fast-forward would be possible
    - This makes it easier to see which commits were part of which feature
 
-3. **Pulling Best Practices**: ☐
+3. **Pulling Best Practices**: ☑️
    - Use rebase when pulling from develop or main to avoid unnecessary merge commits:
      ```bash
      git pull --rebase origin develop
      ```
    - Only do this for direct work on develop or main, not for feature branches
 
-4. **Branch Naming Conventions**: ☐
+4. **Branch Naming Conventions**: ☑️
    - `feature/feature-name` - For new features
    - `release/X.Y.Z` - For release preparation
    - `hotfix/issue-description` - For critical production fixes
 
-5. **Version Tagging**: ☐
+5. **Version Tagging**: ☑️
    - Tag all releases on the main branch with version numbers
    - Use semantic versioning (X.Y.Z)
    - Always include a descriptive message with tags
 
-### B.4. Feature Development Workflow ☐
+### B.4. Feature Development Workflow ☑️
 
-1. **Start a feature**: ☐
+1. **Start a feature**: ☑️
    ```bash
    # Without git-flow extensions
    git checkout develop
@@ -101,7 +101,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git flow feature start new-feature
    ```
 
-2. **During feature development**: ☐
+2. **During feature development**: ☑️
    - Make regular, atomic commits
    - Push feature branch regularly for backup/collaboration:
      ```bash
@@ -115,7 +115,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
      git rebase develop
      ```
 
-3. **Finish a feature**: ☐
+3. **Finish a feature**: ☑️
    ```bash
    # Without git-flow extensions
    git checkout develop
@@ -130,9 +130,9 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin develop
    ```
 
-### B.5. Release Workflow ☐
+### B.5. Release Workflow ☑️
 
-1. **Start a release**: ☐
+1. **Start a release**: ☑️
    ```bash
    # Without git-flow extensions
    git checkout develop
@@ -143,12 +143,12 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git flow release start 1.0.0
    ```
 
-2. **During release preparation**: ☐
+2. **During release preparation**: ☑️
    - Only fix bugs, polish documentation and prepare for release
    - No new features at this stage
    - Bump version numbers in relevant files
 
-3. **Finish a release**: ☐
+3. **Finish a release**: ☑️
    ```bash
    # Without git-flow extensions
    git checkout main
@@ -171,9 +171,9 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin main --tags
    ```
 
-### B.6. Hotfix Workflow ☐
+### B.6. Hotfix Workflow ☑️
 
-1. **Start a hotfix**: ☐
+1. **Start a hotfix**: ☑️
    ```bash
    # Without git-flow extensions
    git checkout main
@@ -184,7 +184,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git flow hotfix start critical-issue
    ```
 
-2. **Finish a hotfix**: ☐
+2. **Finish a hotfix**: ☑️
    ```bash
    # Without git-flow extensions
    git checkout main
@@ -210,7 +210,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
 ## C. Phase 1: Project Setup and Foundation (Week 1) ☐
 
 ### C.1. Step 1: Initial Project Setup ☐
-1. Create new SvelteKit project ☐
+1. Create new SvelteKit project ☑️
    ```bash
    # Using the latest SvelteKit CLI command (as of March 2025)
    npx sv create the-ether
@@ -218,7 +218,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    npm install
    ```
    
-2. Install core dependencies ☐
+2. Install core dependencies ☑️
    ```bash
    # Database
    npm install better-sqlite3 drizzle-orm drizzle-kit
@@ -226,11 +226,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    # Authentication (BetterAuth is recommended as of 2025)
    npm install betterauth better-sqlite-session
    
-   # UI Components (choose one: shadcn-svelte or skeleton)
-   # For shadcn-svelte
-   npx shadcn-svelte@latest init
-   
-   # OR for Skeleton
+   # UI Components Skeleton
    npm install @skeletonlabs/skeleton @skeletonlabs/tw-plugin
    
    # Animation

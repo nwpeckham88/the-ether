@@ -14,5 +14,12 @@
     "svelte": "^5.25.3",
     "typescript": "^5.8.2",
     "vitest": "^3.0.9"
+  },
+  "dependencies": {
+    "@auth/sveltekit": "^1.8.0",
+    "better-auth": "^1.2.4",
+    "better-sqlite3": "^11.9.1",
+    "drizzle-kit": "^0.30.5",
+    "drizzle-orm": "^0.41.0"
   }
 }

@@ -336,15 +336,15 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin --delete feature/build-config  # Clean up remote branch if it exists
    ```
 
-### C.3. Step 3: Create Database Schema ☐
-1. Create feature branch ☐
+### C.3. Step 3: Create Database Schema ☑️
+1. Create feature branch ☑️
    ```bash
    git checkout develop
    git pull --rebase origin develop
    git checkout -b feature/database-schema
    ```
    
-2. Define database tables using Drizzle ORM ☐
+2. Define database tables using Drizzle ORM ☑️
    ```typescript
    // src/lib/server/db/schema.ts
    import { sqliteTable, text, integer, blob } from 'drizzle-orm/sqlite-core';

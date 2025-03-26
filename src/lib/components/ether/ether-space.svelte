@@ -11,13 +11,11 @@
   
   // Local state
   let element: HTMLElement;
-  let spaceElement: HTMLElement;
   let zoomLevel = 1;
   let viewportX = 0;
   let viewportY = 0;
-  
-  // Clean-up function for keyboard navigation
-  let cleanup: () => void;
+  let container: HTMLElement;
+  let cleanupFunction: (() => void) | null = null;
   
   onMount(() => {
     // Simple fade-in with CSS transition instead of Motion library
@@ -26,48 +24,46 @@
     }
     
     // Set up keyboard navigation
-    if (spaceElement) {
-      cleanup = enableKeyboardNavigation(spaceElement, {
-        onMove: (direction, amount) => {
-          switch (direction) {
-            case 'up':
-              viewportY += amount;
-              break;
-            case 'down':
-              viewportY -= amount;
-              break;
-            case 'left':
-              viewportX += amount;
-              break;
-            case 'right':
-              viewportX -= amount;
-              break;
-          }
-        },
-        onZoom: (direction) => {
-          if (direction === 'in') {
-            zoomIn();
-          } else {
-            zoomOut();
-          }
-        },
-        moveStep: 20
+    if (container) {
+      cleanupFunction = enableKeyboardNavigation(container, {
+        onMove: (x, y) => moveViewport(x, y),
+        onZoom: (doZoomIn) => doZoomIn ? zoomIn() : zoomOut()
       });
+      
+      // Set initial focus to enable keyboard navigation
+      container.focus();
+      
+      // Initialize transform
+      updateTransform();
     }
   });
   
   onDestroy(() => {
-    if (cleanup) cleanup();
+    if (cleanupFunction) {
+      cleanupFunction();
+    }
   });
   
   // Zoom controls
   function zoomIn() {
-    zoomLevel += 0.1;
+    zoomLevel = Math.min(2, zoomLevel + 0.1);
+    updateTransform();
   }
   
   function zoomOut() {
-    if (zoomLevel > 0.2) {
-      zoomLevel -= 0.1;
+    zoomLevel = Math.max(0.5, zoomLevel - 0.1);
+    updateTransform();
+  }
+  
+  function moveViewport(deltaX: number, deltaY: number) {
+    viewportX += deltaX;
+    viewportY += deltaY;
+    updateTransform();
+  }
+  
+  function updateTransform() {
+    if (container) {
+      container.style.transform = `scale(${zoomLevel}) translate(${viewportX}px, ${viewportY}px)`;
     }
   }
   
@@ -76,22 +72,47 @@
     viewportX = 0;
     viewportY = 0;
     zoomLevel = 1;
+    updateTransform();
   }
 </script>
 
-<style>
-  .fade-in {
-    opacity: 0;
-    transition: opacity 0.3s ease-out;
-  }
-</style>
-
-<div class="relative w-full h-[80vh] overflow-hidden border border-gray-200 bg-gray-50 rounded-lg">
+<div class="relative w-full h-full overflow-hidden">
+  <div class="absolute top-4 right-4 flex gap-2 z-10">
+    <button 
+      class="bg-white p-2 rounded-full shadow-md hover:bg-gray-100"
+      on:click={zoomIn}
+      aria-label="Zoom in"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+      </svg>
+    </button>
+    <button 
+      class="bg-white p-2 rounded-full shadow-md hover:bg-gray-100"
+      on:click={zoomOut}
+      aria-label="Zoom out"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path>
+      </svg>
+    </button>
+    <button 
+      class="bg-white p-2 rounded-full shadow-md hover:bg-gray-100"
+      on:click={resetView}
+      aria-label="Reset view"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"></path>
+      </svg>
+    </button>
+  </div>
+  
   <div 
-    bind:this={spaceElement}
-    class="relative w-full h-full focus:outline-none"
-    style="transform: scale({zoomLevel}) translate({viewportX}px, {viewportY}px);"
+    bind:this={container}
+    class="relative w-full h-full origin-center transition-transform duration-200"
     tabindex="0"
+    role="application"
+    aria-label="Ether Space"
   >
     <div bind:this={element} class="w-full h-full fade-in">
       {#each items as item (item.id)}
@@ -103,33 +124,5 @@
         </div>
       {/each}
     </div>
-  </div>
-  
-  <div class="absolute bottom-4 right-4 flex gap-2">
-    <button 
-      class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center text-gray-800 hover:bg-gray-100"
-      on:click={zoomIn}
-      aria-label="Zoom In"
-    >
-      +
-    </button>
-    <button 
-      class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center text-gray-800 hover:bg-gray-100"
-      on:click={zoomOut}
-      aria-label="Zoom Out"
-    >
-      -
-    </button>
-    <button 
-      class="px-3 h-10 bg-white rounded-full shadow flex items-center justify-center text-gray-800 hover:bg-gray-100"
-      on:click={resetView}
-      aria-label="Reset View"
-    >
-      Reset
-    </button>
-  </div>
-  
-  <div class="absolute top-4 left-4 bg-white/80 px-3 py-1 rounded-md text-sm">
-    Ether Space: {spaceId}
   </div>
 </div> 

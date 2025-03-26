@@ -1,64 +1,82 @@
+export interface NavigationOptions {
+  moveStep?: number;
+  zoomStep?: number;
+  onMove?: (x: number, y: number) => void;
+  onZoom?: (zoomIn: boolean) => void;
+}
+
 /**
- * Enables keyboard navigation for the Ether Space component
- * @param element The HTML element to attach keyboard navigation to
- * @param options Configuration options
+ * Enables keyboard navigation for a given element
+ * Handles arrow keys for movement and + / - for zoom
  */
 export function enableKeyboardNavigation(
-  element: HTMLElement,
-  options: {
-    onMove?: (direction: 'up' | 'down' | 'left' | 'right', amount: number) => void;
-    onZoom?: (direction: 'in' | 'out', amount: number) => void;
-    moveStep?: number;
-    zoomStep?: number;
-  } = {}
+  element: HTMLElement, 
+  options: NavigationOptions = {}
 ) {
-  const {
-    onMove = () => {},
-    onZoom = () => {},
-    moveStep = 10,
-    zoomStep = 0.1
+  const { 
+    moveStep = 10, 
+    zoomStep = 0.1,
+    onMove,
+    onZoom
   } = options;
   
-  // Handle keyboard events
-  function handleKeyDown(event: KeyboardEvent) {
-    // Prevent default browser behaviors for arrow keys
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', '+', '-'].includes(event.key)) {
-      event.preventDefault();
+  function handleKeydown(event: KeyboardEvent) {
+    // Don't handle navigation if user is typing in an input/textarea
+    if (
+      event.target instanceof HTMLInputElement ||
+      event.target instanceof HTMLTextAreaElement ||
+      event.target instanceof HTMLSelectElement
+    ) {
+      return;
     }
     
-    // Movement controls
+    // Only handle if the element has focus or the event target is the element
+    if (document.activeElement !== element && event.target !== element) {
+      return;
+    }
+    
     switch (event.key) {
       case 'ArrowUp':
-        onMove('up', moveStep);
+        event.preventDefault();
+        if (onMove) onMove(0, -moveStep);
         break;
       case 'ArrowDown':
-        onMove('down', moveStep);
+        event.preventDefault();
+        if (onMove) onMove(0, moveStep);
         break;
       case 'ArrowLeft':
-        onMove('left', moveStep);
+        event.preventDefault();
+        if (onMove) onMove(-moveStep, 0);
         break;
       case 'ArrowRight':
-        onMove('right', moveStep);
+        event.preventDefault();
+        if (onMove) onMove(moveStep, 0);
         break;
       case '+':
-        onZoom('in', zoomStep);
+      case '=':
+        event.preventDefault();
+        if (onZoom) onZoom(true);
         break;
       case '-':
-        onZoom('out', zoomStep);
+      case '_':
+        event.preventDefault();
+        if (onZoom) onZoom(false);
+        break;
+      case '0':
+        // Reset view
+        if (event.ctrlKey || event.metaKey) {
+          event.preventDefault();
+          if (onMove) onMove(0, 0);
+        }
         break;
     }
   }
   
   // Add event listener
-  element.addEventListener('keydown', handleKeyDown);
+  element.addEventListener('keydown', handleKeydown);
   
-  // Make the element focusable if it isn't already
-  if (!element.getAttribute('tabindex')) {
-    element.setAttribute('tabindex', '0');
-  }
-  
-  // Return a cleanup function
+  // Return cleanup function
   return () => {
-    element.removeEventListener('keydown', handleKeyDown);
+    element.removeEventListener('keydown', handleKeydown);
   };
 } 

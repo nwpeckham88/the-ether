@@ -1,8 +1,27 @@
-<div class="flex flex-col items-center justify-center min-h-[80vh] text-center">
-  <h1 class="text-4xl font-bold mb-4">Welcome to The Ether</h1>
-  <p class="text-xl mb-8">A protected local network sharing application</p>
-  <div class="flex gap-4">
-    <a href="/login" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Login</a>
-    <a href="/register" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Register</a>
+<script lang="ts">
+  import { goto } from '$app/navigation';
+  import { onMount } from 'svelte';
+  
+  onMount(() => {
+    // Check if the user is logged in
+    // In a real app, this would check for a valid session
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    
+    // Redirect to the appropriate page
+    if (isLoggedIn) {
+      goto('/app');
+    } else {
+      goto('/login');
+    }
+  });
+</script>
+
+<div class="flex items-center justify-center min-h-screen">
+  <div class="text-center">
+    <h1 class="text-2xl font-bold mb-4">The Ether</h1>
+    <p class="text-gray-600">Redirecting...</p>
+    <div class="mt-4">
+      <div class="w-8 h-8 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin mx-auto"></div>
+    </div>
   </div>
 </div>

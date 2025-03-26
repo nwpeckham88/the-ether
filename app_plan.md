@@ -11,11 +11,11 @@
 
 ## Technology Stack
 - **Frontend**: SvelteKit 2.0+ with TypeScript and Svelte runes
-- **UI Components**: Skeleton UI for base components
+- **UI Components**: Custom lightweight UI components
 - **Styling**: TailwindCSS v4
 - **Animations**: Motion One with svelte-motion
 - **Database**: better-sqlite3 with Drizzle ORM
-- **Authentication**: BetterAuth
+- **Authentication**: Custom authentication with Argon2
 - **Network Sync**: WebSockets via Socket.IO
 - **File Processing**: Sharp for images, pdf.js for documents
 - **Testing**: Vitest with @testing-library/svelte
@@ -31,10 +31,10 @@ npm install
 
 # Core and Database
 npm install better-sqlite3 drizzle-orm drizzle-kit
-npm install betterauth
+npm install argon2
 
 # UI and Styling
-npm install @skeletonlabs/skeleton @skeletonlabs/tw-plugin
+npm install tailwindcss @tailwindcss/vite
 npm install motion # Simplified animation library
 
 # File Processing (lazy loaded)
@@ -50,12 +50,10 @@ npm install -D vitest @testing-library/svelte
 
 ### Library Usage Guidelines
 
-1. **Skeleton UI** - Use for:
-   - Form components (login, register, settings)
-   - Modal dialogs
-   - Buttons and basic inputs
-   - Toast notifications
-   - Skip complex components that can be built with basic HTML/CSS
+1. **TailwindCSS v4** - Use for:
+   - All styling throughout the application
+   - Utility-first approach for component styling
+   - Custom theme variables for consistent design
 
 2. **Motion One** - Use for:
    - 3D card transformations
@@ -63,9 +61,9 @@ npm install -D vitest @testing-library/svelte
    - Page transitions
    - Keep animations subtle and performant
 
-3. **BetterAuth** - Streamlined authentication:
-   - Basic username/password auth
-   - Session management
+3. **Custom Authentication** - Streamlined authentication:
+   - Basic username/password auth with Argon2
+   - Session management with cookies
    - Route protection
    - Skip complex features like OAuth/social login initially
 
@@ -88,18 +86,14 @@ npm install -D vitest @testing-library/svelte
 ### Example of Simplified Component
 
 ```svelte
-<!-- src/lib/components/ether/content-item.svelte -->
+<!-- src/lib/components/ui/card.svelte -->
 <script lang="ts">
   import { animate } from 'motion';
   import { onMount } from 'svelte';
   
-  export let item: ContentItem;
-  let element: HTMLElement;
+  export let elevation = 1; // 1, 2, or 3
   
-  // Simple drag and drop without external library
-  function handleDragStart(e: DragEvent) {
-    e.dataTransfer?.setData('text/plain', item.id);
-  }
+  let element: HTMLElement;
   
   onMount(() => {
     // Simple animation with Motion One
@@ -115,11 +109,12 @@ npm install -D vitest @testing-library/svelte
 
 <div
   bind:this={element}
-  draggable="true"
-  on:dragstart={handleDragStart}
-  class="absolute p-4 rounded-lg bg-white/10 backdrop-blur-sm"
-  style="transform: translate({item.positionX}px, {item.positionY}px)
-         translateZ({item.positionZ}px);"
+  class="bg-white rounded-lg p-4 {elevation === 1 
+    ? 'shadow-sm' 
+    : elevation === 2 
+    ? 'shadow-md' 
+    : 'shadow-lg'}"
+  {...$$restProps}
 >
   <slot />
 </div>
@@ -161,38 +156,30 @@ const spaceStore = createStore([], {
 
 #### 1. Tailwind Configuration (tailwind.config.js)
 ```javascript
-import { skeleton } from '@skeletonlabs/tw-plugin';
-
 export default {
   darkMode: 'class',
-  content: ['./src/**/*.{html,js,svelte,ts}'],
-  plugins: [skeleton({
-    themes: {
-      custom: [
-        {
-          name: 'ether-theme',
-          properties: {
-            // Custom theme properties for The Ether
-            '--theme-font-family-base': 'Inter, system-ui, sans-serif',
-            '--theme-rounded-base': '0.5rem',
-            '--theme-rounded-container': '0.75rem'
-          }
-        }
-      ]
-    }
-  })]
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+      colors: {
+        // Custom colors if needed
+      }
+    },
+  }
 };
 ```
 
 #### 2. Vite Configuration (vite.config.ts)
 ```typescript
-import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { use } from '@vite-use/use';
+import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   plugins: [
-    use(),
+    tailwindcss(),
     sveltekit()
   ],
   test: {
@@ -200,15 +187,11 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts']
   },
-  optimizeDeps: {
-    exclude: ['@lucia-auth/adapter-sqlite']
-  },
   build: {
     // Split large dependencies into separate chunks
     rollupOptions: {
       output: {
         manualChunks: {
-          'skeleton-ui': ['@skeletonlabs/skeleton'],
           'pdf-viewer': ['pdfjs-dist'],
           'socket-io': ['socket.io-client']
         }
@@ -259,7 +242,7 @@ export const users = sqliteTable('users', {
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date())
 });
 
-// Add sessions table for BetterAuth
+// Add sessions table for authentication
 export const sessions = sqliteTable('sessions', {
   id: text('id').primaryKey().$defaultFn(() => createId()),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -330,11 +313,14 @@ src/
 │   │   │   ├── image-item.svelte
 │   │   │   └── document-item.svelte
 │   │   ├── ui/
-│   │   │   ├── three-d-card.svelte (existing)
+│   │   │   ├── three-d-card.svelte
 │   │   │   ├── nav-sidebar.svelte
-│   │   │   └── futuristic-background.svelte
+│   │   │   ├── button.svelte
+│   │   │   ├── input.svelte
+│   │   │   ├── modal.svelte
+│   │   │   └── layout-shell.svelte
 │   ├── server/
-│   │   ├── auth.ts (existing)
+│   │   ├── auth.ts
 │   │   ├── socket.ts
 │   │   ├── file-storage.ts
 │   │   └── db/
@@ -386,8 +372,8 @@ src/
 ### Week 1: Foundation
 - Set up project with streamlined dependencies
 - Initialize database with Drizzle ORM
-- Implement core BetterAuth authentication
-- Create basic layout with Skeleton UI components
+- Implement custom authentication with Argon2
+- Create basic layout with custom UI components
 - Set up basic routing and protection
 
 ### Week 2: Core Features
@@ -417,7 +403,7 @@ src/
    - Basic route protection
 
 2. **UI Components**
-   - Use Skeleton UI for basic components only
+   - Custom lightweight UI components
    - Simple Motion One animations
    - Native HTML5 Drag and Drop
 
@@ -443,592 +429,124 @@ This streamlined approach focuses on:
 - Easier maintenance
 - Faster development cycle
 
-## Server-Side Authentication Endpoints
+## Custom UI Components
 
-```typescript
-// src/routes/login/+page.server.ts
-import { fail, redirect } from '@sveltejs/kit';
-import { auth } from '$lib/server/auth';
-import type { Actions } from './$types';
+### Core UI Components
 
-export const actions: Actions = {
-  default: async ({ request, cookies }) => {
-    const data = await request.formData();
-    const username = data.get('username');
-    const password = data.get('password');
-
-    if (!username || !password) {
-      return fail(400, { error: 'Missing username or password' });
-    }
-
-    try {
-      const result = await auth.signIn({ username: username.toString(), password: password.toString() });
-      
-      if (result.success) {
-        throw redirect(303, '/app');
-      }
-      
-      return fail(400, { error: result.error });
-    } catch (e) {
-      return fail(500, { error: 'An unexpected error occurred' });
-    }
-  }
-};
-
-// src/routes/register/+page.server.ts
-import { fail, redirect } from '@sveltejs/kit';
-import { auth } from '$lib/server/auth';
-import type { Actions } from './$types';
-
-export const actions: Actions = {
-  default: async ({ request }) => {
-    const data = await request.formData();
-    const username = data.get('username');
-    const email = data.get('email');
-    const password = data.get('password');
-
-    if (!username || !email || !password) {
-      return fail(400, { error: 'Missing required fields' });
-    }
-
-    try {
-      const result = await auth.signUp({
-        username: username.toString(),
-        email: email.toString(),
-        password: password.toString()
-      });
-      
-      if (result.success) {
-        throw redirect(303, '/app');
-      }
-      
-      return fail(400, { error: result.error });
-    } catch (e) {
-      return fail(500, { error: 'An unexpected error occurred' });
-    }
-  }
-};
-
-// src/routes/api/auth/change-password/+server.ts
-import { json } from '@sveltejs/kit';
-import { auth } from '$lib/server/auth';
-import type { RequestHandler } from './$types';
-
-export const POST: RequestHandler = async ({ request, locals }) => {
-  if (!locals.user) {
-    return json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { currentPassword, newPassword } = await request.json();
-
-  if (!currentPassword || !newPassword) {
-    return json({ error: 'Missing required fields' }, { status: 400 });
-  }
-
-  try {
-    const result = await auth.changePassword({
-      userId: locals.user.id,
-      currentPassword,
-      newPassword
-    });
-
-    if (result.success) {
-      return json({ message: 'Password updated successfully' });
-    }
-
-    return json({ error: result.error }, { status: 400 });
-  } catch (e) {
-    return json({ error: 'An unexpected error occurred' }, { status: 500 });
-  }
-};
-
-// src/routes/api/auth/logout/+server.ts
-import { redirect } from '@sveltejs/kit';
-import { auth } from '$lib/server/auth';
-import type { RequestHandler } from './$types';
-
-export const POST: RequestHandler = async ({ locals, cookies }) => {
-  if (!locals.session) {
-    throw redirect(303, '/login');
-  }
-
-  await auth.signOut(locals.session.id);
-  throw redirect(303, '/login');
-};
-```
-
-## Authentication Types
-
-```typescript
-// src/lib/types.ts
-export interface User {
-  id: string;
-  username: string;
-  email: string;
-  isActive: boolean;
-  lastLogin: Date | null;
-  createdAt: Date;
-}
-
-export interface Session {
-  id: string;
-  userId: string;
-  expiresAt: Date;
-  createdAt: Date;
-}
-
-export interface AuthResult {
-  success: boolean;
-  error?: string;
-  user?: User;
-  session?: Session;
-}
-```
-
-## Performance Optimization Strategies
-
-### 1. Bundle Size Optimization
-```typescript
-// vite.config.ts
-import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
-
-export default defineConfig({
-  plugins: [sveltekit()],
-  build: {
-    // Split large dependencies into separate chunks
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'skeleton-ui': ['@skeletonlabs/skeleton'],
-          'pdf-viewer': ['pdfjs-dist'],
-          'socket-io': ['socket.io-client']
-        }
-      }
-    },
-    // Enable chunk size warnings
-    chunkSizeWarningLimit: 500
-  }
-});
-```
-
-### 2. Dynamic Imports
-```typescript
-// src/lib/components/ether/document-item.svelte
+#### Button Component
+```svelte
+<!-- src/lib/components/ui/button.svelte -->
 <script lang="ts">
-  import { onMount } from 'svelte';
-  let viewer: any;
-  
-  onMount(async () => {
-    // Load PDF.js only when needed
-    const { getDocument } = await import('pdfjs-dist');
-    viewer = await getDocument(url).promise;
-  });
-</script>
-```
-
-### 3. Image Optimization Pipeline
-```typescript
-// src/lib/server/image-processor.ts
-import sharp from 'sharp';
-import { mkdir } from 'fs/promises';
-import path from 'path';
-
-const CACHE_DIR = 'storage/cache';
-const SIZES = {
-  thumbnail: 150,
-  preview: 800,
-  full: 1920
-};
-
-export async function processImage(file: Buffer, filename: string) {
-  // Create cache directory structure
-  await mkdir(path.join(CACHE_DIR, filename), { recursive: true });
-  
-  // Process different sizes in parallel
-  await Promise.all(
-    Object.entries(SIZES).map(async ([size, width]) => {
-      const image = sharp(file)
-        .resize(width, null, { withoutEnlargement: true })
-        .webp({ quality: 80 }); // Use WebP for better compression
-        
-      await image.toFile(
-        path.join(CACHE_DIR, filename, `${size}.webp`)
-      );
-    })
-  );
-}
-```
-
-### 4. Efficient Store Updates
-```typescript
-// src/lib/stores/optimized-store.ts
-import { writable, get } from 'svelte/store';
-
-export function createOptimizedStore<T extends { id: string }>(initial: T[]) {
-  const { subscribe, set, update } = writable<T[]>(initial);
-  
-  // Use Map for O(1) lookups
-  const cache = new Map<string, T>();
-  
-  return {
-    subscribe,
-    set: (value: T[]) => {
-      cache.clear();
-      value.forEach(item => cache.set(item.id, item));
-      set(value);
-    },
-    // Optimized update for single item
-    updateItem: (id: string, changes: Partial<T>) => {
-      update(items => {
-        const index = items.findIndex(item => item.id === id);
-        if (index === -1) return items;
-        
-        const newItem = { ...items[index], ...changes };
-        cache.set(id, newItem);
-        
-        return [
-          ...items.slice(0, index),
-          newItem,
-          ...items.slice(index + 1)
-        ];
-      });
-    },
-    // Batch updates for better performance
-    batchUpdate: (updates: Array<[string, Partial<T>]>) => {
-      update(items => {
-        const itemMap = new Map(items.map(item => [item.id, item]));
-        
-        updates.forEach(([id, changes]) => {
-          const item = itemMap.get(id);
-          if (item) {
-            const newItem = { ...item, ...changes };
-            itemMap.set(id, newItem);
-            cache.set(id, newItem);
-          }
-        });
-        
-        return Array.from(itemMap.values());
-      });
-    }
-  };
-}
-```
-
-### 5. Socket.IO Optimization
-```typescript
-// src/lib/socket-client.ts
-import { io } from 'socket.io-client';
-
-export const socket = io({
-  // Only connect when needed
-  autoConnect: false,
-  // Reduce unnecessary polling
-  transports: ['websocket'],
-  // Optimize packet size
-  perMessageDeflate: true,
-  // Batch messages
-  enablesXDR: true,
-  // Reconnection strategy
-  reconnectionDelay: 1000,
-  reconnectionDelayMax: 5000,
-  randomizationFactor: 0.5
-});
-
-// Implement connection state management
-let pendingMessages: Array<[string, any]> = [];
-
-socket.on('connect', () => {
-  // Send pending messages when connection is restored
-  pendingMessages.forEach(([event, data]) => {
-    socket.emit(event, data);
-  });
-  pendingMessages = [];
-});
-
-export function emitWithRetry(event: string, data: any) {
-  if (socket.connected) {
-    socket.emit(event, data);
-  } else {
-    pendingMessages.push([event, data]);
-  }
-}
-```
-
-### 6. Component Lazy Loading
-```typescript
-// src/routes/+layout.ts
-export const load = async () => {
-  return {
-    // Preload critical components
-    components: {
-      ThreeDCard: import('$lib/components/ui/three-d-card.svelte'),
-      NavSidebar: import('$lib/components/ui/nav-sidebar.svelte')
-    }
-  };
-};
-
-// src/lib/utils/lazy.ts
-export function lazyLoad(path: string) {
-  return async () => {
-    const component = await import(path);
-    return component.default;
-  };
-}
-
-// Usage in components
-const DocumentViewer = lazyLoad('$lib/components/document-viewer.svelte');
-```
-
-### 7. Memory Management
-```typescript
-// src/lib/utils/memory.ts
-export class MemoryManager {
-  private static instance: MemoryManager;
-  private cache = new Map<string, {
-    data: any,
-    lastAccessed: number
-  }>();
-  private maxItems = 100;
-  
-  static getInstance() {
-    if (!MemoryManager.instance) {
-      MemoryManager.instance = new MemoryManager();
-    }
-    return MemoryManager.instance;
-  }
-  
-  set(key: string, value: any) {
-    if (this.cache.size >= this.maxItems) {
-      // Remove least recently used items
-      const entries = Array.from(this.cache.entries());
-      entries.sort((a, b) => a[1].lastAccessed - b[1].lastAccessed);
-      this.cache.delete(entries[0][0]);
-    }
-    
-    this.cache.set(key, {
-      data: value,
-      lastAccessed: Date.now()
-    });
-  }
-  
-  get(key: string) {
-    const item = this.cache.get(key);
-    if (item) {
-      item.lastAccessed = Date.now();
-      return item.data;
-    }
-    return null;
-  }
-  
-  clear() {
-    this.cache.clear();
-  }
-}
-
-// Usage
-const memoryManager = MemoryManager.getInstance();
-```
-
-### 8. Loading State Management
-```typescript
-// src/lib/stores/loading-store.ts
-import { writable, derived } from 'svelte/store';
-
-interface LoadingState {
-  [key: string]: boolean;
-}
-
-function createLoadingStore() {
-  const { subscribe, update } = writable<LoadingState>({});
-  
-  return {
-    subscribe,
-    start: (operation: string) => update(state => ({ ...state, [operation]: true })),
-    end: (operation: string) => update(state => ({ ...state, [operation]: false })),
-    // Derived store for any loading state
-    isLoading: derived(subscribe, $state => Object.values($state).some(v => v))
-  };
-}
-
-export const loading = createLoadingStore();
-
-// Usage in components
-import { loading } from '$lib/stores/loading-store';
-
-async function loadData() {
-  loading.start('data');
-  try {
-    await fetchData();
-  } finally {
-    loading.end('data');
-  }
-}
-```
-
-## Accessibility and SEO Optimization
-
-### 1. Accessibility Features
-```typescript
-// src/lib/components/ui/base-button.svelte
-<script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  
   export let variant: 'primary' | 'secondary' | 'ghost' = 'primary';
+  export let size: 'sm' | 'md' | 'lg' = 'md';
   export let disabled = false;
-  export let ariaLabel: string | undefined = undefined;
-  export let type: 'button' | 'submit' = 'button';
+  export let type: 'button' | 'submit' | 'reset' = 'button';
   
-  const dispatch = createEventDispatcher();
+  // Define the classes based on variant and size
+  const variantClasses = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500',
+    ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500'
+  };
   
-  // Keyboard handling for better accessibility
-  function handleKeydown(event: KeyboardEvent) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      dispatch('click');
-    }
-  }
+  const sizeClasses = {
+    sm: 'py-1 px-3 text-sm',
+    md: 'py-2 px-4 text-base',
+    lg: 'py-3 px-6 text-lg'
+  };
+  
+  $: classes = `rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 
+                ${variantClasses[variant]} ${sizeClasses[size]} 
+                ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`;
 </script>
 
-<button
-  {type}
-  class="btn-{variant}"
-  {disabled}
-  aria-label={ariaLabel}
+<button 
+  {type} 
+  {disabled} 
+  class={classes}
   on:click
-  on:keydown={handleKeydown}
   {...$$restProps}
 >
   <slot />
 </button>
-
-<style>
-  button {
-    /* High contrast focus ring */
-    &:focus-visible {
-      outline: 3px solid var(--color-focus);
-      outline-offset: 2px;
-    }
-    
-    /* Ensure sufficient color contrast */
-    &.btn-primary {
-      background-color: var(--color-primary-600);
-      color: var(--color-white);
-    }
-    
-    /* Reduced motion preference */
-    @media (prefers-reduced-motion: reduce) {
-      transition: none;
-    }
-  }
-</style>
 ```
 
-### 2. Error Boundary Implementation
-```typescript
-// src/lib/components/error-boundary.svelte
-<script lang="ts">
-  import { onError } from 'svelte';
-  import { dev } from '$app/environment';
-  import { loading } from '$lib/stores/loading-store';
-  
-  let error: Error | null = null;
-  let errorInfo: string = '';
-  
-  onError(({ error: e, message }) => {
-    error = e;
-    errorInfo = message;
-    loading.clear(); // Clear any loading states
-    
-    // Log error to monitoring service in production
-    if (!dev) {
-      logError(e, message);
-    }
-  });
-  
-  function retry() {
-    error = null;
-    errorInfo = '';
-  }
-</script>
-
-{#if error}
-  <div role="alert" class="error-boundary">
-    <h2>Something went wrong</h2>
-    {#if dev}
-      <pre>{error.stack}</pre>
-      <p>{errorInfo}</p>
-    {/if}
-    <button on:click={retry}>Try Again</button>
-  </div>
-{:else}
-  <slot />
-{/if}
-```
-
-## Modern Web Platform Features
-
-### 1. CSS Scroll Snap for Carousels
+#### Modal Component
 ```svelte
-<!-- src/lib/components/ui/content-carousel.svelte -->
+<!-- src/lib/components/ui/modal.svelte -->
 <script lang="ts">
-  export let items: any[] = [];
-</script>
-
-<div class="carousel">
-  <div class="carousel-container">
-    {#each items as item}
-      <div class="carousel-item">
-        <slot item={item} />
-      </div>
-    {/each}
-  </div>
-</div>
-
-<style>
-  .carousel {
-    max-width: 100%;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
+  import { fade, fly } from 'svelte/transition';
+  import { createEventDispatcher } from 'svelte';
+  
+  export let open = false;
+  export let title = '';
+  export let closeOnEscape = true;
+  export let closeOnOutsideClick = true;
+  
+  const dispatch = createEventDispatcher();
+  
+  function close() {
+    dispatch('close');
   }
-
-  .carousel-container {
-    display: flex;
-    scroll-snap-type: x mandatory;
-    gap: 1rem;
-  }
-
-  .carousel-item {
-    flex: 0 0 auto;
-    width: 300px;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
-  }
-
-  /* Progressive enhancement for browsers that support container queries */
-  @container (min-width: 768px) {
-    .carousel-item {
-      width: 400px;
+  
+  function handleKeydown(e: KeyboardEvent) {
+    if (closeOnEscape && e.key === 'Escape' && open) {
+      close();
     }
   }
-</style>
-```
-
-### 2. View Transitions API for Page Navigation
-```typescript
-// src/lib/utils/navigation.ts
-import { goto } from '$app/navigation';
-
-export async function navigateWithTransition(href: string) {
-  if (!document.startViewTransition) {
-    // Fallback for browsers without View Transitions
-    return goto(href);
+  
+  function handleOutsideClick(e: MouseEvent) {
+    if (closeOnOutsideClick && (e.target as HTMLElement).classList.contains('modal-backdrop')) {
+      close();
+    }
   }
+</script>
 
-  return document.startViewTransition(async () => {
-    await goto(href);
-  }).finished;
-}
+<svelte:window on:keydown={handleKeydown} />
+
+{#if open}
+  <div 
+    class="fixed inset-0 z-50 overflow-y-auto"
+    transition:fade={{ duration: 150 }}
+  >
+    <div 
+      class="modal-backdrop flex min-h-screen items-center justify-center p-4 text-center sm:p-0"
+      style="background-color: rgba(0, 0, 0, 0.5);"
+      on:click={handleOutsideClick}
+    >
+      <div
+        class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:max-w-lg sm:w-full"
+        transition:fly={{ y: 30, duration: 300 }}
+      >
+        {#if title}
+          <div class="flex items-center justify-between border-b border-gray-200 px-4 py-3">
+            <h3 class="text-lg font-medium text-gray-900">{title}</h3>
+            <button 
+              type="button"
+              class="text-gray-400 hover:text-gray-500"
+              on:click={close}
+              aria-label="Close"
+            >
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        {/if}
+        
+        <div class="px-4 py-3 sm:px-6">
+          <slot />
+        </div>
+        
+        {#if $$slots.footer}
+          <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-gray-200">
+            <slot name="footer" />
+          </div>
+        {/if}
+      </div>
+    </div>
+  </div>
+{/if}
 ```
 
 ## Conclusion

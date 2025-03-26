@@ -1,18 +1,41 @@
 <script lang="ts">
-  import { enhance } from '$app/forms';
+  import { goto } from '$app/navigation';
+  
+  export let form;
+  
+  function handleLogin(event: SubmitEvent) {
+    // In a real app with a server, we would validate credentials on the server
+    // This is a client-side mock for demonstration purposes only
+    event.preventDefault();
+    
+    const formData = new FormData(event.target as HTMLFormElement);
+    const email = formData.get('email')?.toString();
+    const password = formData.get('password')?.toString();
+    
+    // Simple validation
+    if (!email || !password) {
+      form = { error: 'Email and password are required', email };
+      return;
+    }
+    
+    // Mock successful login
+    localStorage.setItem('isLoggedIn', 'true');
+    goto('/app');
+  }
 </script>
 
 <div class="flex min-h-screen flex-col items-center justify-center p-4">
   <div class="w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-md">
     <h1 class="mb-6 text-center text-2xl font-bold">Login to The Ether</h1>
     
-    <form method="POST" class="space-y-4" use:enhance>
+    <form on:submit={handleLogin} class="space-y-4">
       <div>
         <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
         <input
           type="email"
           id="email"
           name="email"
+          value={form?.email || ''}
           class="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500"
           required
         />
@@ -29,11 +52,17 @@
         />
       </div>
       
+      {#if form?.error}
+        <div class="rounded-md bg-red-50 p-4 text-sm text-red-700">
+          {form.error}
+        </div>
+      {/if}
+      
       <button
         type="submit"
         class="w-full rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
       >
-        Log In
+        Login
       </button>
     </form>
     

@@ -10,7 +10,9 @@ export default defineConfig({
         manualChunks: {
           'ui-components': ['@skeletonlabs/skeleton'],
           'pdf-viewer': ['pdfjs-dist'],
-          'socket-io': ['socket.io-client']
+          'socket-io': ['socket.io-client'],
+          'auth': ['better-auth'],
+          'database': ['drizzle-orm']
         }
       }
     },
@@ -19,7 +21,13 @@ export default defineConfig({
   },
   // Optimize dependency pre-bundling
   optimizeDeps: {
-    include: ['@skeletonlabs/skeleton', '@animotion/motion']
+    include: [
+      '@skeletonlabs/skeleton',
+      '@animotion/motion',
+      'better-auth',
+      'drizzle-orm',
+      'drizzle-orm/better-sqlite3'
+    ]
   },
   // Enable source maps in development
   server: {

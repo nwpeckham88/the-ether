@@ -19,7 +19,7 @@ export interface User {
 export interface Session {
   id: string;
   userId: string;
-  userAgent?: string;
+  userAgent?: string | undefined;
   expiresAt: Date;
   createdAt: Date;
 }
@@ -43,7 +43,20 @@ export const verifyPassword = async (storedHash: string, password: string): Prom
   return new Promise((resolve, reject) => {
     try {
       // Parse the stored hash string
-      const [algorithm, iterations, salt, hash] = storedHash.split(':');
+      const parts = storedHash.split(':');
+      if (parts.length !== 4) {
+        return resolve(false);
+      }
+      
+      const algorithm = parts[0];
+      const iterations = parts[1];
+      const salt = parts[2];
+      const hash = parts[3];
+      
+      if (!algorithm || !iterations || !salt || !hash) {
+        return resolve(false);
+      }
+      
       const iterCount = parseInt(iterations, 10);
       
       if (algorithm !== 'pbkdf2') {
@@ -64,15 +77,39 @@ export const verifyPassword = async (storedHash: string, password: string): Prom
 
 // User functions
 export const findUserById = async (id: string): Promise<User | undefined> => {
-  return await db.query.users.findFirst({
+  const user = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.id, id)
   });
+  
+  if (!user) return undefined;
+  
+  return {
+    id: user.id,
+    email: user.email,
+    passwordHash: user.passwordHash,
+    emailVerified: !!user.emailVerified, // Convert to boolean
+    lastLogin: user.lastLogin,
+    isActive: !!user.isActive, // Convert to boolean
+    createdAt: user.createdAt || new Date()
+  };
 };
 
 export const findUserByEmail = async (email: string): Promise<User | undefined> => {
-  return await db.query.users.findFirst({
+  const user = await db.query.users.findFirst({
     where: (users, { eq }) => eq(users.email, email)
   });
+  
+  if (!user) return undefined;
+  
+  return {
+    id: user.id,
+    email: user.email,
+    passwordHash: user.passwordHash,
+    emailVerified: !!user.emailVerified, // Convert to boolean
+    lastLogin: user.lastLogin,
+    isActive: !!user.isActive, // Convert to boolean
+    createdAt: user.createdAt || new Date()
+  };
 };
 
 export const createUser = async (email: string, password: string): Promise<User> => {
@@ -89,7 +126,10 @@ export const createUser = async (email: string, password: string): Promise<User>
   });
   
   const user = await findUserById(id);
-  return user as User;
+  if (!user) {
+    throw new Error('Failed to create user');
+  }
+  return user;
 };
 
 // Session functions
@@ -116,9 +156,19 @@ export const createSession = async (userId: string, userAgent?: string): Promise
 };
 
 export const findSessionById = async (id: string): Promise<Session | undefined> => {
-  return await db.query.sessions.findFirst({
+  const session = await db.query.sessions.findFirst({
     where: (sessions, { eq }) => eq(sessions.id, id)
   });
+  
+  if (!session) return undefined;
+  
+  return {
+    id: session.id,
+    userId: session.userId,
+    userAgent: session.userAgent || undefined,
+    expiresAt: session.expiresAt,
+    createdAt: session.createdAt || new Date()
+  };
 };
 
 export const deleteSession = async (id: string): Promise<void> => {
@@ -149,11 +199,11 @@ export const auth = {
   
   // Auth handlers (compatible with SvelteKit actions)
   handler: {
-    async signIn(request) {
+    async signIn(request: Request) {
       // Implementation will come later in the route handlers
       return new Response();
     },
-    async signUp(request) {
+    async signUp(request: Request) {
       // Implementation will come later in the route handlers
       return new Response();
     }

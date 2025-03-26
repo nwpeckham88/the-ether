@@ -159,8 +159,8 @@
           top: {item.position?.y ?? 0}px;
           z-index: {activeItem === item.id ? 10 : 1};
         "
-        on:click={() => selectItem(item.id)}
-        on:mousedown={(event) => {
+        onclick={() => selectItem(item.id)}
+        onmousedown={(event) => {
           // Add drag handling
           const startX = event.clientX;
           const startY = event.clientY;
@@ -211,105 +211,9 @@
   </div>
 
   <div class="zoom-controls">
-    <button on:click={zoomOut}>-</button>
+    <button onclick={zoomOut}>-</button>
     <span>{Math.round(zoomLevel * 100)}%</span>
-    <button on:click={zoomIn}>+</button>
-    <button on:click={resetZoom}>Reset</button>
+    <button onclick={zoomIn}>+</button>
+    <button onclick={resetZoom}>Reset</button>
   </div>
 </div>
-
-<style>
-  .ether-space {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background-color: var(--color-background-alt);
-    background-image: 
-      linear-gradient(rgba(150, 150, 150, 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(150, 150, 150, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-
-  .content-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    transform: scale(var(--zoom)) translate(var(--pan-x), var(--pan-y));
-    transform-origin: center;
-    transition: transform 0.2s ease-out;
-  }
-
-  .content-item {
-    position: absolute;
-    min-width: 200px;
-    max-width: 400px;
-    background: white;
-    border-radius: 4px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    cursor: move;
-  }
-
-  .fade-in {
-    animation: fadeIn 0.3s ease-in;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-
-  .content-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 12px;
-    background: var(--color-primary-100);
-    border-bottom: 1px solid var(--color-border);
-  }
-
-  .content-body {
-    padding: 12px;
-    max-height: 300px;
-    overflow: auto;
-  }
-
-  .text-content {
-    white-space: pre-wrap;
-  }
-
-  img {
-    max-width: 100%;
-    height: auto;
-  }
-
-  .zoom-controls {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    background: white;
-    border-radius: 4px;
-    padding: 8px;
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  }
-
-  .zoom-controls button {
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-background);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    cursor: pointer;
-  }
-
-  .zoom-controls button:hover {
-    background: var(--color-background-hover);
-  }
-</style> 

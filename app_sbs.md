@@ -1,9 +1,9 @@
-# The Ether - Implementation Step-by-Step Plan ☐
+# The Ether - Implementation Step-by-Step Plan ☑️
 
-## A. Project Overview ☐
+## A. Project Overview ☑️
 The Ether is a protected local network sharing application built with SvelteKit. It enables users to create and share virtual "Ether Spaces" where they can place various types of content (text, links, images, documents) in a 3D environment accessible to other users on the local network.
 
-## B. Git Workflow: Gitflow Methodology and Best Practices ☐
+## B. Git Workflow: Gitflow Methodology and Best Practices ☑️
 
 We'll use the Gitflow workflow to manage our development process. This branching model provides a robust framework for managing larger projects.
 
@@ -207,7 +207,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin main --tags
    ```
 
-## C. Phase 1: Project Setup and Foundation (Week 1) ☐
+## C. Phase 1: Project Setup and Foundation (Week 1) ☑️
 
 ### C.1. Step 1: Initial Project Setup ☑️
 1. Create new SvelteKit project ☑️
@@ -223,18 +223,14 @@ We'll use the Gitflow workflow to manage our development process. This branching
    # Database
    npm install better-sqlite3 drizzle-orm drizzle-kit
    
-   # Authentication (Better Auth is recommended as of 2025)
-   npm install better-auth
+   # Authentication
+   npm install argon2 # For password hashing
    
-   # UI Components (choose one: shadcn-svelte or skeleton)
-   # For shadcn-svelte
-   npx shadcn-svelte@latest init
-   
-   # OR for Skeleton
-   npm install @skeletonlabs/skeleton @skeletonlabs/tw-plugin
+   # UI and Styling
+   npm install tailwindcss @tailwindcss/vite
    
    # Animation
-   npm install @animotion/motion
+   npm install motion
    
    # File Processing (lazy loaded)
    npm install sharp
@@ -464,165 +460,446 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git branch -d feature/database-schema
    ```
 
-### C.4. Step 4: Implement Authentication ☑️
-1. Create feature branch ☑️
+### C.4. Step 4: UI Component Setup ☑️
+1. Set up Tailwind CSS v4 ☑️
    ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git checkout -b feature/auth
+   # Install Tailwind CSS and the Vite plugin
+   npm install tailwindcss @tailwindcss/vite
+   npm install @tailwindcss/postcss
    ```
+
+2. Create Tailwind configuration file ☑️
+   Create `tailwind.config.js` in the project root:
+   ```javascript
+   export default {
+     darkMode: 'class',
+     theme: {
+       extend: {
+         fontFamily: {
+           sans: ['Inter', 'system-ui', 'sans-serif'],
+         },
+         colors: {
+           // Custom colors if needed
+         }
+       },
+     }
+   };
+   ```
+
+3. Create Vite configuration ☑️
+   Create or update `vite.config.js` in the project root:
+   ```javascript
+   import { sveltekit } from '@sveltejs/kit/vite';
+   import { defineConfig } from 'vite';
+   import tailwindcss from '@tailwindcss/vite';
+
+   export default defineConfig({
+     plugins: [
+       tailwindcss(),
+       sveltekit()
+     ]
+   });
+   ```
+
+4. Set up main CSS file ☑️
+   Create or update `src/app.css`:
+   ```css
+   @import "tailwindcss";
    
-2. Set up authentication integration ☑️
+   /* Custom global styles */
+   body {
+     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+   }
+   
+   html, body {
+     height: 100%;
+   }
+   
+   :root {
+     --color-primary-600: oklch(0.546 0.245 262.881);
+     --color-primary-700: oklch(0.488 0.243 264.376);
+     --color-white: #fff;
+     --color-focus: oklch(0.623 0.214 259.815);
+   }
+   
+   .fade-in {
+     opacity: 0;
+     transition: opacity 0.3s ease-out;
+   }
+   ```
+
+5. Create a basic button component ☑️
+   Create `src/lib/components/ui/button.svelte`:
+   ```svelte
+   <script lang="ts">
+     export let variant: 'primary' | 'secondary' | 'ghost' = 'primary';
+     export let size: 'sm' | 'md' | 'lg' = 'md';
+     export let disabled = false;
+     export let type: 'button' | 'submit' | 'reset' = 'button';
+     
+     // Define the classes based on variant and size
+     const variantClasses = {
+       primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+       secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-500',
+       ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500'
+     };
+     
+     const sizeClasses = {
+       sm: 'py-1 px-3 text-sm',
+       md: 'py-2 px-4 text-base',
+       lg: 'py-3 px-6 text-lg'
+     };
+     
+     $: classes = `rounded-md font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 
+                   ${variantClasses[variant]} ${sizeClasses[size]} 
+                   ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`;
+   </script>
+   
+   <button 
+     {type} 
+     {disabled} 
+     class={classes}
+     on:click
+     {...$$restProps}
+   >
+     <slot />
+   </button>
+   ```
+
+6. Create PostCSS configuration ☑️
+   Create `postcss.config.js` in the project root:
+   ```javascript
+   export default {
+     plugins: {
+       autoprefixer: {},
+       '@tailwindcss/postcss': {},
+     },
+   };
+   ```
+
+### C.5. Step 5: Authentication Setup ☐
+
+1. Set up the auth utils file ☐
+   Create `src/lib/server/auth.ts`:
    ```typescript
-   // src/lib/server/auth.ts
-   import { createId } from '@paralleldrive/cuid2';
+   import { randomBytes, pbkdf2Sync } from 'crypto';
    import { db } from './db';
    import { users, sessions } from './db/schema';
    import { eq } from 'drizzle-orm';
-   import { dev } from '$app/environment';
-   import crypto from 'crypto';
-
-   // Custom authentication implementation with BetterAuth-like API
-   export const auth = {
-     // Core auth functions
-     validateSession: async (sessionId?: string) => {
-       // Implementation details
-     },
-     
-     // Auth handlers (compatible with SvelteKit actions)
-     handler: {
-       async signIn(request) {
-         // Implementation details
-       },
-       async signUp(request) {
-         // Implementation details
-       }
-     }
-   };
-   ```
+   import { createId } from '@paralleldrive/cuid2';
    
-3. Create app.d.ts type declarations ☑️
-   ```typescript
-   // src/app.d.ts
-   declare global {
-     namespace App {
-       interface Locals {
-         auth: any;
-         session: {
-           id: string;
-           userId: string;
-           expiresAt: Date;
-         } | null;
-         user: {
-           id: string;
-           email: string;
-           emailVerified: boolean;
-           isActive: boolean;
-         } | null;
+   // Password hashing configuration
+   const ITERATIONS = 10000;
+   const KEY_LENGTH = 64;
+   const SALT_LENGTH = 16;
+   const DIGEST = 'sha512';
+   
+   // Hash a password with PBKDF2
+   export function hashPassword(password: string): string {
+     const salt = randomBytes(SALT_LENGTH).toString('hex');
+     const hash = pbkdf2Sync(
+       password,
+       salt,
+       ITERATIONS,
+       KEY_LENGTH,
+       DIGEST
+     ).toString('hex');
+   
+     return `${salt}:${hash}`;
+   }
+   
+   // Verify a password against a hash
+   export function verifyPassword(storedHash: string, password: string): boolean {
+     const [salt, hash] = storedHash.split(':');
+     
+     if (!salt || !hash) return false;
+     
+     const calculatedHash = pbkdf2Sync(
+       password,
+       salt,
+       ITERATIONS,
+       KEY_LENGTH,
+       DIGEST
+     ).toString('hex');
+     
+     return hash === calculatedHash;
+   }
+   
+   // Create a new user
+   export async function createUser(userData: { 
+     email: string; 
+     password: string; 
+     username?: string;
+   }) {
+     try {
+       // Check if user already exists
+       const existingUser = await db.query.users.findFirst({
+         where: (users, { eq }) => eq(users.email, userData.email)
+       });
+       
+       if (existingUser) {
+         return { success: false, error: 'User already exists' };
        }
+       
+       // Create user
+       const passwordHash = hashPassword(userData.password);
+       const userId = createId();
+       
+       await db.insert(users).values({
+         id: userId,
+         email: userData.email,
+         username: userData.username || userData.email.split('@')[0],
+         passwordHash
+       });
+       
+       return { success: true, userId };
+     } catch (error) {
+       console.error('Error creating user:', error);
+       return { success: false, error: 'Failed to create user' };
+     }
+   }
+   
+   // Create a new session
+   export async function createSession(userId: string) {
+     try {
+       const sessionId = createId();
+       const expiresAt = new Date();
+       expiresAt.setDate(expiresAt.getDate() + 7); // 1 week
+       
+         await db.insert(sessions).values({
+         id: sessionId,
+         userId,
+         expiresAt
+       });
+       
+       return { success: true, sessionId, expiresAt };
+     } catch (error) {
+       console.error('Error creating session:', error);
+       return { success: false, error: 'Failed to create session' };
+     }
+   }
+   
+   // Validate a session
+   export async function validateSession(sessionId: string) {
+     try {
+       const session = await db.query.sessions.findFirst({
+         where: (sessions, { eq }) => eq(sessions.id, sessionId),
+         with: {
+           user: true
+         }
+       });
+       
+       if (!session) {
+         return { valid: false };
+       }
+       
+       if (new Date() > session.expiresAt) {
+         await db.delete(sessions).where(eq(sessions.id, sessionId));
+         return { valid: false };
+       }
+       
+       return { valid: true, session, user: session.user };
+     } catch (error) {
+       console.error('Error validating session:', error);
+       return { valid: false };
+     }
+   }
+   
+   // Delete a session (sign out)
+   export async function deleteSession(sessionId: string) {
+     try {
+       await db.delete(sessions).where(eq(sessions.id, sessionId));
+       return { success: true };
+     } catch (error) {
+       console.error('Error deleting session:', error);
+       return { success: false, error: 'Failed to delete session' };
      }
    }
    ```
-   
-4. Implement server hooks for authentication ☑️
+
+2. Create the server hooks for authentication ☐
+   Create `src/hooks.server.ts`:
    ```typescript
-   // src/hooks.server.ts
-   import { auth } from '$lib/server/auth';
+   import { validateSession } from '$lib/server/auth';
    import type { Handle } from '@sveltejs/kit';
 
    export const handle: Handle = async ({ event, resolve }) => {
-     // Attach auth to the event
-     event.locals.auth = auth;
-     event.locals.session = null;
-     event.locals.user = null;
-     
-     // Get session cookie
      const sessionId = event.cookies.get('session');
      
      if (sessionId) {
-       try {
-         // Validate session
-         const session = await auth.validateSession(sessionId);
-         
-         if (session) {
-           // Set user and session in locals
-           event.locals.session = {
-             id: session.id,
-             userId: session.userId,
-             expiresAt: session.expiresAt
-           };
-           
-           event.locals.user = {
-             id: session.user.id,
-             email: session.user.email,
-             emailVerified: session.user.emailVerified || false,
-             isActive: session.user.isActive || false
-           };
-         }
-       } catch (error) {
-         console.error('Session validation error:', error);
+       const { valid, user } = await validateSession(sessionId);
+     
+       if (valid && user) {
+         event.locals.user = user;
+         event.locals.session = { id: sessionId };
+     } else {
+         // Clear invalid cookie
+         event.cookies.delete('session', { path: '/' });
        }
      }
      
-     // Resolve the request
-     return await resolve(event);
+     return resolve(event);
    };
    ```
    
-5. Create login and registration endpoints ☑️
+3. Set up login page server handler ☐
+   Create `src/routes/login/+page.server.ts`:
    ```typescript
-   // src/routes/login/+page.server.ts
-   import { auth } from '$lib/server/auth';
    import { db } from '$lib/server/db';
    import { users } from '$lib/server/db/schema';
-   import { eq } from 'drizzle-orm';
+   import { verifyPassword, createSession } from '$lib/server/auth';
    import { fail, redirect } from '@sveltejs/kit';
-   import { createId } from '@paralleldrive/cuid2';
    import type { Actions } from './$types';
 
    export const actions: Actions = {
      default: async ({ request, cookies }) => {
-       // Implementation details
+       const formData = await request.formData();
+       const email = formData.get('email')?.toString();
+       const password = formData.get('password')?.toString();
+
+       // Validate input
+       if (!email || !password) {
+         return fail(400, { 
+           error: 'Email and password are required',
+           email 
+         });
+       }
+
+       try {
+         // Find user by email
+         const user = await db.query.users.findFirst({
+           where: (users, { eq }) => eq(users.email, email)
+         });
+         
+         if (!user) {
+           return fail(400, { 
+             error: 'Invalid email or password',
+             email 
+           });
+         }
+         
+         // Verify password
+         const passwordValid = verifyPassword(user.passwordHash, password);
+         
+         if (!passwordValid) {
+           return fail(400, { 
+             error: 'Invalid email or password',
+             email 
+           });
+         }
+         
+         // Create new session
+         const { success, sessionId, error } = await createSession(user.id);
+         
+         if (!success) {
+           return fail(500, { 
+             error: error || 'Failed to create session',
+             email 
+           });
+         }
+         
+         // Set cookie
+         cookies.set('session', sessionId, {
+           path: '/',
+           httpOnly: true,
+           sameSite: 'strict',
+           secure: process.env['NODE_ENV'] === 'production',
+           maxAge: 60 * 60 * 24 * 7 // 1 week
+         });
+         
+         // Update last login time
+         await db.update(users)
+           .set({ lastLogin: new Date() })
+           .where(eq(users.id, user.id));
+         
+         // Redirect to app
+         throw redirect(303, '/app');
+       } catch (error) {
+         console.error('Login error:', error);
+         return fail(500, { 
+           error: 'An unexpected error occurred',
+           email 
+         });
+       }
      }
    };
    ```
 
+4. Set up registration page server handler ☐
+   Create `src/routes/register/+page.server.ts`:
    ```typescript
-   // src/routes/register/+page.server.ts
-   import { auth } from '$lib/server/auth';
-   import { db } from '$lib/server/db';
-   import { users } from '$lib/server/db/schema';
-   import { eq } from 'drizzle-orm';
+   import { createUser, createSession } from '$lib/server/auth';
    import { fail, redirect } from '@sveltejs/kit';
-   import { createId } from '@paralleldrive/cuid2';
    import type { Actions } from './$types';
 
    export const actions: Actions = {
-     default: async ({ request }) => {
-       // Implementation details
+     default: async ({ request, cookies }) => {
+       const formData = await request.formData();
+       const email = formData.get('email')?.toString();
+       const password = formData.get('password')?.toString();
+       const confirmPassword = formData.get('confirmPassword')?.toString();
+
+       // Validate input
+       if (!email || !password || !confirmPassword) {
+         return fail(400, { 
+           error: 'All fields are required',
+           email 
+         });
+       }
+       
+       if (password !== confirmPassword) {
+         return fail(400, { 
+           error: 'Passwords do not match',
+           email 
+         });
+       }
+       
+       try {
+         // Create user
+         const { success, error, userId } = await createUser({
+           email,
+           password
+         });
+         
+         if (!success) {
+           return fail(400, { 
+             error: error || 'Failed to create user',
+             email 
+           });
+         }
+         
+         // Create session
+         const sessionResult = await createSession(userId);
+         
+         if (!sessionResult.success) {
+           return fail(500, { 
+             error: sessionResult.error || 'Failed to create session',
+             email 
+           });
+         }
+         
+         // Set cookie
+         cookies.set('session', sessionResult.sessionId, {
+           path: '/',
+           httpOnly: true,
+           sameSite: 'strict',
+           secure: process.env['NODE_ENV'] === 'production',
+           maxAge: 60 * 60 * 24 * 7 // 1 week
+         });
+         
+         // Redirect to app
+         throw redirect(303, '/app');
+       } catch (error) {
+         console.error('Registration error:', error);
+         return fail(500, { 
+           error: 'An unexpected error occurred',
+           email 
+         });
+       }
      }
    };
    ```
    
-6. Set up route protection ☑️
-   ```typescript
-   // src/routes/app/+layout.server.ts
-   import { redirect } from '@sveltejs/kit';
-   import type { LayoutServerLoad } from './$types';
-
-   export const load: LayoutServerLoad = async ({ locals }) => {
-     // Check if user is authenticated
-     if (!locals.user) {
-       throw redirect(302, '/login');
-     }
-     
-     // Return user data
-     return {
-       user: locals.user
-     };
-   };
-   ```
-
 ### C.5. Step 5: Create Base Layout and Pages ☑️
 1. Create feature branch ☑️
    ```bash
@@ -725,150 +1002,1062 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin --delete feature/base-ui
    ```
 
-## D. Phase 2: Core Application Features (Week 2) ☐
+## D. Phase 2: Core Application Features (Week 2) ☑️
 
-### D.1. Step 6: Create the Ether Space Component ☐
-1. Create feature branch ☐
+### D.1. Step 6: Create the Ether Space Component ☑️
+1. Create feature branch ☑️
    ```bash
    git checkout develop
    git pull --rebase origin develop
    git checkout -b feature/ether-space
    ```
    
-2. Build 3D card component with @animotion/motion ☐
+2. Build Ether Space component with keyboard navigation and zoom ☑️
    ```svelte
    <!-- src/lib/components/ether/ether-space.svelte -->
    <script lang="ts">
-     import { animate } from '@animotion/motion';
-     import { onMount } from 'svelte';
+     import { onMount, onDestroy } from 'svelte';
+     import { enableKeyboardNavigation } from '$lib/utils/keyboard-navigation';
+     import type { ContentItem } from '$lib/types';
      
-     // Using Svelte 5 runes for props
-     let spaceId = $props(String);
-     let items = $props(Array);
+     // Props
+     export let spaceId: string;
+     export let items: ContentItem[] = [];
      
+     // Local state
      let element: HTMLElement;
+     let zoomLevel = 1;
+     let viewportX = 0;
+     let viewportY = 0;
+     let container: HTMLElement;
+     let cleanupFunction: (() => void) | null = null;
      
      onMount(() => {
-       // Simple animation with Motion One
-       animate(element, {
-         scale: [0.95, 1],
-         opacity: [0, 1]
-       }, {
-         duration: 0.3,
-         easing: 'ease-out'
-       });
+       // Simple fade-in with CSS transition
+       if (element) {
+         element.style.opacity = '1';
+       }
+       
+       // Set up keyboard navigation
+       if (container) {
+         cleanupFunction = enableKeyboardNavigation(container, {
+           onMove: (x, y) => moveViewport(x, y),
+           onZoom: (zoomIn) => zoomIn ? zoomIn() : zoomOut()
+         });
+         
+         // Set initial focus to enable keyboard navigation
+         container.focus();
+         
+         // Initialize transform
+         updateTransform();
+       }
      });
+     
+     onDestroy(() => {
+       if (cleanupFunction) {
+         cleanupFunction();
+       }
+     });
+     
+     // Zoom controls
+     function zoomIn() {
+       zoomLevel = Math.min(2, zoomLevel + 0.1);
+       updateTransform();
+     }
+     
+     function zoomOut() {
+       zoomLevel = Math.max(0.5, zoomLevel - 0.1);
+       updateTransform();
+     }
+     
+     function moveViewport(deltaX: number, deltaY: number) {
+       viewportX += deltaX;
+       viewportY += deltaY;
+       updateTransform();
+     }
+     
+     function updateTransform() {
+       if (container) {
+         container.style.transform = `scale(${zoomLevel}) translate(${viewportX}px, ${viewportY}px)`;
+       }
+     }
+     
+     // Reset view position
+     function resetView() {
+       viewportX = 0;
+       viewportY = 0;
+       zoomLevel = 1;
+       updateTransform();
+     }
    </script>
 
-   <div
-     bind:this={element}
-     class="relative w-full h-full"
-   >
-     {#each items as item (item.id)}
-       <div
-         class="absolute"
-         style="transform: translate3d({item.positionX}px, {item.positionY}px, {item.positionZ}px);"
+   <div class="relative w-full h-full overflow-hidden">
+     <div class="absolute top-4 right-4 flex gap-2 z-10">
+       <button 
+         class="bg-white p-2 rounded-full shadow-md hover:bg-gray-100"
+         on:click={zoomIn}
+         aria-label="Zoom in"
        >
-         <!-- Content Item Component -->
-         <slot {item} />
+         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+         </svg>
+       </button>
+       <button 
+         class="bg-white p-2 rounded-full shadow-md hover:bg-gray-100"
+         on:click={zoomOut}
+         aria-label="Zoom out"
+       >
+         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path>
+         </svg>
+       </button>
+       <button 
+         class="bg-white p-2 rounded-full shadow-md hover:bg-gray-100"
+         on:click={resetView}
+         aria-label="Reset view"
+       >
+         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5"></path>
+         </svg>
+       </button>
+     </div>
+     
+     <div 
+       bind:this={container}
+       class="relative w-full h-full origin-center transition-transform duration-200"
+       tabindex="0"
+       role="application"
+       aria-label="Ether Space"
+     >
+       <div bind:this={element} class="w-full h-full fade-in">
+         {#each items as item (item.id)}
+           <div
+             class="absolute"
+             style="transform: translate3d({item.positionX}px, {item.positionY}px, {item.positionZ}px);"
+           >
+             <slot {item} />
+           </div>
+         {/each}
        </div>
-     {/each}
+     </div>
    </div>
    ```
    
-3. Implement the main Ether Space container ☐
+3. Implement keyboard navigation utility ☑️
+   ```typescript
+   // src/lib/utils/keyboard-navigation.ts
+   export interface NavigationOptions {
+     moveStep?: number;
+     zoomStep?: number;
+     onMove?: (x: number, y: number) => void;
+     onZoom?: (zoomIn: boolean) => void;
+   }
+
+   /**
+    * Enables keyboard navigation for a given element
+    * Handles arrow keys for movement and + / - for zoom
+    */
+   export function enableKeyboardNavigation(
+     element: HTMLElement, 
+     options: NavigationOptions = {}
+   ) {
+     const { 
+       moveStep = 10, 
+       zoomStep = 0.1,
+       onMove,
+       onZoom
+     } = options;
+     
+     function handleKeydown(event: KeyboardEvent) {
+       // Don't handle navigation if user is typing in an input/textarea
+       if (
+         event.target instanceof HTMLInputElement ||
+         event.target instanceof HTMLTextAreaElement ||
+         event.target instanceof HTMLSelectElement
+       ) {
+         return;
+       }
+       
+       // Only handle if the element has focus or the event target is the element
+       if (document.activeElement !== element && event.target !== element) {
+         return;
+       }
+       
+       switch (event.key) {
+         case 'ArrowUp':
+           event.preventDefault();
+           if (onMove) onMove(0, -moveStep);
+           break;
+         case 'ArrowDown':
+           event.preventDefault();
+           if (onMove) onMove(0, moveStep);
+           break;
+         case 'ArrowLeft':
+           event.preventDefault();
+           if (onMove) onMove(-moveStep, 0);
+           break;
+         case 'ArrowRight':
+           event.preventDefault();
+           if (onMove) onMove(moveStep, 0);
+           break;
+         case '+':
+         case '=':
+           event.preventDefault();
+           if (onZoom) onZoom(true);
+           break;
+         case '-':
+         case '_':
+           event.preventDefault();
+           if (onZoom) onZoom(false);
+           break;
+         case '0':
+           // Reset view
+           if (event.ctrlKey || event.metaKey) {
+             event.preventDefault();
+             if (onMove) onMove(0, 0);
+           }
+           break;
+       }
+     }
+     
+     // Add event listener
+     element.addEventListener('keydown', handleKeydown);
+     
+     // Return cleanup function
+     return () => {
+       element.removeEventListener('keydown', handleKeydown);
+     };
+   }
+   ```
+   
+4. Create content type definitions ☑️
+   ```typescript
+   // src/lib/types.ts
+   // Content item interface
+   export interface ContentItem {
+     id: string;
+     positionX: number;
+     positionY: number;
+     positionZ: number;
+     contentType: 'text' | 'link' | 'image' | 'document';
+     content: string;
+     title?: string;
+   }
+
+   // User interface
+   export interface User {
+     id: string;
+     email: string;
+     username?: string;
+     lastLogin?: Date;
+     isActive: boolean;
+   }
+
+   // Session interface
+   export interface Session {
+     id: string;
+     userId: string;
+     expiresAt: Date;
+   }
+   ```
+   
+5. Add Ether Space to main routes ☑️
    ```svelte
    <!-- src/routes/app/[spaceId]/+page.svelte -->
    <script lang="ts">
      import EtherSpace from '$lib/components/ether/ether-space.svelte';
+     import ContentItem from '$lib/components/ether/content-item.svelte';
+     import type { ContentItem as ContentItemType } from '$lib/types';
+     import { page } from '$app/stores';
      
-     // Using Svelte 5 runes for page params
-     let spaceId = $params(String);
+     // Ensure spaceId is always a string, with a default value if undefined
+     const spaceId = $page.params['spaceId'] || 'default';
      
-     // Mock data for now
-     let items = [
-       { id: '1', positionX: 0, positionY: 0, positionZ: 0 },
-       { id: '2', positionX: 100, positionY: 50, positionZ: -50 }
-     ];
-   </script>
-
-   <EtherSpace {spaceId} {items}>
-     <div>Content Item</div>
-   </EtherSpace>
-   ```
-   
-4. Set up basic keyboard navigation ☐
-   ```typescript
-   // src/lib/utils/keyboard-navigation.ts
-   export function enableKeyboardNavigation(element: HTMLElement) {
-     element.addEventListener('keydown', (event) => {
-       switch (event.key) {
-         case 'ArrowUp':
-           // Move up
-           break;
-         case 'ArrowDown':
-           // Move down
-           break;
-         // Add more cases as needed
+     // Mock data for testing
+     const items: ContentItemType[] = [
+       {
+         id: '1',
+         positionX: 100,
+         positionY: 100,
+         positionZ: 0,
+         contentType: 'text',
+         content: 'This is a text item in the Ether Space.',
+         title: 'Text Note'
+       },
+       {
+         id: '2',
+         positionX: 400,
+         positionY: 150,
+         positionZ: 0,
+         contentType: 'link',
+         content: 'https://svelte.dev',
+         title: 'Svelte Website'
+       },
+       {
+         id: '3',
+         positionX: 200,
+         positionY: 300,
+         positionZ: 0,
+         contentType: 'text',
+         content: 'You can move these items with drag and drop!',
+       },
+       {
+         id: '4',
+         positionX: 500,
+         positionY: 400,
+         positionZ: 0,
+         contentType: 'text',
+         content: 'Use arrow keys to navigate the space, and +/- to zoom.',
        }
-     });
-   }
-   ```
-   
-5. Add viewport and zoom controls ☐
-   ```svelte
-   <!-- src/lib/components/ether/ether-space.svelte -->
-   <script lang="ts">
-     // Zoom functionality
-     let zoomLevel = $state(1);
+     ];
      
-     function zoomIn() {
-       zoomLevel += 0.1;
-     }
-     
-     function zoomOut() {
-       zoomLevel -= 0.1;
+     function handlePositionChange(event: CustomEvent) {
+       console.log('Position changed:', event.detail);
+       // In a real app, we would update the position in the store/database
      }
    </script>
 
-   <div
-     bind:this={element}
-     class="relative w-full h-full"
-     style="transform: scale({zoomLevel});"
-   >
-     {#each items as item (item.id)}
-       <div
-         class="absolute"
-         style="transform: translate3d({item.positionX}px, {item.positionY}px, {item.positionZ}px);"
-       >
-         <!-- Content Item Component -->
-         <slot {item} />
-       </div>
-     {/each}
+   <div class="w-full h-[80vh]">
+     <div class="flex items-center justify-between mb-4">
+       <h1 class="text-2xl font-bold">Ether Space: {spaceId}</h1>
+       <div class="text-sm">Use arrow keys to navigate, +/- to zoom</div>
+     </div>
+     
+     <div class="w-full h-full border border-gray-200 rounded-lg overflow-hidden bg-gray-50">
+       <EtherSpace {spaceId} {items}>
+         <svelte:fragment let:item>
+           <ContentItem 
+             id={item.id}
+             positionX={item.positionX}
+             positionY={item.positionY}
+             positionZ={item.positionZ}
+             contentType={item.contentType}
+             content={item.content}
+             on:positionchange={handlePositionChange}
+           />
+         </svelte:fragment>
+       </EtherSpace>
+     </div>
    </div>
-
-   <button on:click={zoomIn}>Zoom In</button>
-   <button on:click={zoomOut}>Zoom Out</button>
-   ```
-    
-6 . Merge feature branch ☐
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git merge --no-ff feature/ether-space -m "Merge feature/ether-space: 3D space environment"
-   git push origin develop
-   git branch -d feature/ether-space
-   git push origin --delete feature/ether-space
    ```
 
-### D.2. Step 7: Implement Content Positioning ☐
-1. Create feature branch ☐
+### D.2. Step 7: Implement Content Positioning ☑️
+1. Create feature branch ☑️
    ```bash
    git checkout develop
    git pull --rebase origin develop
    git checkout -b feature/content-positioning
    ```
    
-2. Set up HTML5 Drag and Drop functionality ☐
+2. Set up HTML5 Drag and Drop functionality ☑️
    ```svelte
    <!-- src/lib/components/ether/content-item.svelte -->
+   <script lang="ts">
+     import { createEventDispatcher } from 'svelte';
+     import { onMount } from 'svelte';
+     
+     export let id: string;
+     export let positionX = 0;
+     export let positionY = 0;
+     export let positionZ = 0;
+     export let contentType: 'text' | 'link' | 'image' | 'document' = 'text';
+     export let content: string = '';
+     export let title: string | undefined = undefined;
+     
+     const dispatch = createEventDispatcher();
+     
+     let isDragging = false;
+     let startX = 0;
+     let startY = 0;
+     let elementX = positionX;
+     let elementY = positionY;
+     let element: HTMLElement;
+     
+     function handleDragStart(event: MouseEvent) {
+       isDragging = true;
+       startX = event.clientX;
+       startY = event.clientY;
+       
+       // Add global event listeners
+       window.addEventListener('mousemove', handleDragMove);
+       window.addEventListener('mouseup', handleDragEnd);
+       
+       // Prevent default to avoid text selection
+       event.preventDefault();
+     }
+     
+     function handleDragMove(event: MouseEvent) {
+       if (!isDragging) return;
+       
+       // Calculate new position
+       const deltaX = event.clientX - startX;
+       const deltaY = event.clientY - startY;
+       
+       elementX = positionX + deltaX;
+       elementY = positionY + deltaY;
+       
+       // Update element position
+       if (element) {
+         element.style.transform = `translate3d(${elementX}px, ${elementY}px, ${positionZ}px)`;
+       }
+     }
+     
+     function handleDragEnd() {
+       if (!isDragging) return;
+       
+       isDragging = false;
+       
+       // Remove global event listeners
+       window.removeEventListener('mousemove', handleDragMove);
+       window.removeEventListener('mouseup', handleDragEnd);
+       
+       // Update position and notify parent
+       positionX = elementX;
+       positionY = elementY;
+       
+       // Dispatch position change event
+       dispatch('positionchange', {
+         id,
+         positionX,
+         positionY,
+         positionZ
+       });
+     }
+     
+     // Simple fade-in animation using CSS
+     onMount(() => {
+       if (element) {
+         // Use simple CSS transition for the fade-in effect
+         element.style.opacity = '0';
+         setTimeout(() => {
+           element.style.opacity = '1';
+         }, 10);
+       }
+     });
+   </script>
+
+   <div
+     bind:this={element}
+     class="absolute cursor-grab bg-white rounded-md shadow-md p-4 select-none transition-opacity duration-300
+           {isDragging ? 'cursor-grabbing z-10 shadow-lg' : ''}"
+     style="transform: translate3d({positionX}px, {positionY}px, {positionZ}px)"
+     on:mousedown={handleDragStart}
+   >
+     {#if title}
+       <h3 class="font-medium mb-1">{title}</h3>
+     {/if}
+     
+     {#if contentType === 'text'}
+       <div class="whitespace-pre-wrap">
+         {content}
+       </div>
+     {:else if contentType === 'link'}
+       <a href={content} target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">
+         {title || content}
+       </a>
+     {:else if contentType === 'image'}
+       <img src={content} alt={title || 'Image'} class="max-w-full rounded" loading="lazy" />
+     {:else if contentType === 'document'}
+       <div class="flex items-center gap-2">
+         <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+           <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path>
+         </svg>
+         <span>{title || 'Document'}</span>
+       </div>
+     {/if}
+     
+     <slot />
+   </div>
+   ```
+   
+3. Create type-specific content item components ☑️
+   ```svelte
+   <!-- src/lib/components/ether/text-item.svelte -->
+   <script lang="ts">
+     export let content: string;
+   </script>
+
+   <div class="whitespace-pre-wrap">
+     {content}
+   </div>
+   ```
+   
+   ```svelte
+   <!-- src/lib/components/ether/link-item.svelte -->
+   <script lang="ts">
+     export let url: string;
+     export let title: string | undefined = undefined;
+   </script>
+
+   <a 
+     href={url} 
+     target="_blank" 
+     rel="noopener noreferrer" 
+     class="text-blue-600 hover:underline"
+   >
+     {title || url}
+   </a>
+   ```
+   
+   ```svelte
+   <!-- src/lib/components/ether/image-item.svelte -->
+   <script lang="ts">
+     export let imageUrl: string;
+     export let alt: string = 'Image';
+     export let maxWidth: string = '100%';
+   </script>
+
+   <img 
+     src={imageUrl} 
+     {alt} 
+     class="rounded shadow-sm" 
+     style="max-width: {maxWidth};"
+     loading="lazy"
+   />
+   ```
+   
+4. Merge feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git merge --no-ff feature/content-positioning -m "Merge feature/content-positioning: HTML5 Drag and Drop functionality"
+   git push origin develop
+   git branch -d feature/content-positioning
+   git push origin --delete feature/content-positioning
+   ```
+
+### D.3. Step 8: Implement Content Items Components ☑️
+1. Create specific content item components ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git checkout -b feature/content-type-components
+   ```
+
+2. Implement text content component ☑️
+   ```svelte
+   <!-- src/lib/components/ether/text-item.svelte -->
+   <script lang="ts">
+     export let content: string;
+   </script>
+
+   <div class="whitespace-pre-wrap">
+     {content}
+   </div>
+   ```
+
+3. Implement link content component ☑️
+   ```svelte
+   <!-- src/lib/components/ether/link-item.svelte -->
+   <script lang="ts">
+     export let url: string;
+     export let title: string | undefined = undefined;
+   </script>
+
+   <a 
+     href={url} 
+     target="_blank" 
+     rel="noopener noreferrer" 
+     class="text-blue-600 hover:underline"
+   >
+     {title || url}
+   </a>
+   ```
+
+4. Implement image content component ☑️
+   ```svelte
+   <!-- src/lib/components/ether/image-item.svelte -->
+   <script lang="ts">
+     export let imageUrl: string;
+     export let alt: string = 'Image';
+     export let maxWidth: string = '100%';
+   </script>
+
+   <img 
+     src={imageUrl} 
+     {alt} 
+     class="rounded shadow-sm" 
+     style="max-width: {maxWidth};"
+     loading="lazy"
+   />
+   ```
+
+5. Implement speed-dial component for adding new content ☑️
+   ```svelte
+   <!-- src/lib/components/ether/speed-dial.svelte -->
+   <script lang="ts">
+     import { createEventDispatcher } from 'svelte';
+     
+     // Props
+     export let position: 'top-right' | 'bottom-right' | 'top-left' | 'bottom-left' = 'bottom-right';
+     
+     // State
+     let isOpen = false;
+     
+     // Event handling
+     const dispatch = createEventDispatcher();
+     
+     function toggleOpen() {
+       isOpen = !isOpen;
+     }
+     
+     function handleAction(action: string) {
+       dispatch('action', { type: action });
+       isOpen = false;
+     }
+     
+     // Position classes
+     const positionClasses = {
+       'top-right': 'top-4 right-4',
+       'bottom-right': 'bottom-4 right-4',
+       'top-left': 'top-4 left-4',
+       'bottom-left': 'bottom-4 left-4'
+     };
+   </script>
+
+   <div class="fixed {positionClasses[position]} z-10">
+     <!-- Main button -->
+     <button
+       class="bg-blue-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-transform hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+       on:click={toggleOpen}
+       aria-label={isOpen ? 'Close menu' : 'Open menu'}
+     >
+       {#if isOpen}
+         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+         </svg>
+       {:else}
+         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+         </svg>
+       {/if}
+     </button>
+     
+     <!-- Menu items -->
+     {#if isOpen}
+       <div class="flex flex-col-reverse gap-2 mt-2 mb-2 transition-all">
+         <!-- Text note -->
+         <button
+           class="bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-transform transform hover:scale-110"
+           on:click={() => handleAction('text')}
+           aria-label="Add text note"
+         >
+           <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+           </svg>
+         </button>
+         
+         <!-- Link -->
+         <button
+           class="bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-transform transform hover:scale-110"
+           on:click={() => handleAction('link')}
+           aria-label="Add link"
+         >
+           <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+           </svg>
+         </button>
+         
+         <!-- Image -->
+         <button
+           class="bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-transform transform hover:scale-110"
+           on:click={() => handleAction('image')}
+           aria-label="Add image"
+         >
+           <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+           </svg>
+         </button>
+         
+         <!-- Document -->
+         <button
+           class="bg-white w-10 h-10 rounded-full shadow-md flex items-center justify-center hover:bg-gray-50 transition-transform transform hover:scale-110"
+           on:click={() => handleAction('document')}
+           aria-label="Add document"
+         >
+           <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+           </svg>
+         </button>
+       </div>
+     {/if}
+   </div>
+   ```
+
+6. Add the speed-dial component to the Ether Space ☑️
+   ```svelte
+   <!-- Update src/routes/app/[spaceId]/+page.svelte -->
+   <script lang="ts">
+     import EtherSpace from '$lib/components/ether/ether-space.svelte';
+     import ContentItem from '$lib/components/ether/content-item.svelte';
+     import SpeedDial from '$lib/components/ether/speed-dial.svelte';
+     // ... existing imports ...
+     
+     // ... existing code ...
+     
+     function handleSpeedDialAction(event: CustomEvent) {
+       const { type } = event.detail;
+       console.log('Speed dial action:', type);
+       
+       // In a real app, this would open a modal to add content
+       // and then add the content to the items array
+     }
+   </script>
+
+   <div class="w-full h-[80vh]">
+     <!-- ... existing code ... -->
+     
+     <div class="w-full h-full border border-gray-200 rounded-lg overflow-hidden bg-gray-50 relative">
+       <EtherSpace {spaceId} {items}>
+         <!-- ... existing content ... -->
+       </EtherSpace>
+       
+       <SpeedDial position="bottom-right" on:action={handleSpeedDialAction} />
+     </div>
+   </div>
+   ```
+
+7. Merge feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git merge --no-ff feature/content-type-components -m "Merge feature/content-type-components: Different content type components"
+   git push origin develop
+   git branch -d feature/content-type-components
+   git push origin --delete feature/content-type-components
+   ```
+
+### D.4. Step 9: UI Styling and Theme Customization ☑️
+1. Create feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git checkout -b feature/ui-theme
+   ```
+   
+2. Create Tailwind CSS theme variables ☑️
+   ```css
+   /* src/app.css */
+   @import "tailwindcss";
+
+   /* Custom global styles */
+   body {
+     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+   }
+
+   html, body {
+     height: 100%;
+   }
+
+   :root {
+     --color-primary-600: oklch(0.546 0.245 262.881);
+     --color-primary-700: oklch(0.488 0.243 264.376);
+     --color-white: #fff;
+     --color-focus: oklch(0.623 0.214 259.815);
+   }
+
+   /* Component styles */
+   .fade-in {
+     opacity: 0;
+     transition: opacity 0.3s ease-out;
+   }
+   ```
+   
+3. Update app.html with theme attribute ☑️
+   ```html
+   <!doctype html>
+   <html lang="en">
+     <head>
+       <meta charset="utf-8" />
+       <link rel="icon" href="%sveltekit.assets%/favicon.png" />
+       <meta name="viewport" content="width=device-width, initial-scale=1" />
+       %sveltekit.head%
+     </head>
+     <body data-theme="ether-theme" data-sveltekit-preload-data="hover">
+       <div style="display: contents">%sveltekit.body%</div>
+     </body>
+   </html>
+   ```
+   
+4. Set up PostCSS for Tailwind CSS v4 ☑️
+   ```javascript
+   // postcss.config.js
+   export default {
+     plugins: {
+       autoprefixer: {},
+       '@tailwindcss/postcss': {},
+     },
+   };
+   ```
+   
+5. Merge feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git merge --no-ff feature/ui-theme -m "Merge feature/ui-theme: Tailwind CSS theme customization"
+   git push origin develop
+   git branch -d feature/ui-theme
+   git push origin --delete feature/ui-theme
+   ```
+
+## E. Phase 3: Testing and Refinement (Week 3-4) ☑️
+
+### E.1. Step 10: Testing Component Integration ☑️
+1. Create unit tests for components ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git checkout -b feature/component-tests
+   ```
+   
+2. Set up Vitest and testing library ☑️
+   ```bash
+   npm install -D vitest @testing-library/svelte @testing-library/jest-dom jsdom
+   ```
+   
+3. Create test configuration ☑️
+   ```typescript
+   // vitest.config.ts
+   import { defineConfig } from 'vitest/config';
+   import { svelte } from '@sveltejs/vite-plugin-svelte';
+
+   export default defineConfig({
+     plugins: [svelte({ hot: !process.env.VITEST })],
+     test: {
+       include: ['src/**/*.{test,spec}.{js,ts}'],
+       environment: 'jsdom',
+       globals: true
+     }
+   });
+   ```
+   
+4. Create sample test for Button component ☑️
+   ```typescript
+   // src/lib/components/ui/button.test.ts
+   import { render, fireEvent } from '@testing-library/svelte';
+   import { describe, it, expect, vi } from 'vitest';
+   import Button from './button.svelte';
+
+   describe('Button Component', () => {
+     it('renders with default props', () => {
+       const { getByRole } = render(Button, { props: { label: 'Click me' } });
+       const button = getByRole('button');
+       
+       expect(button).toBeInTheDocument();
+       expect(button).toHaveTextContent('Click me');
+       expect(button).toHaveAttribute('type', 'button');
+       expect(button.classList.contains('bg-blue-600')).toBe(true);
+     });
+     
+     it('applies variants correctly', () => {
+       const { getByRole, rerender } = render(Button, { 
+         props: { label: 'Primary', variant: 'primary' } 
+       });
+       
+       let button = getByRole('button');
+       expect(button.classList.contains('bg-blue-600')).toBe(true);
+       
+       rerender({ label: 'Secondary', variant: 'secondary' });
+       button = getByRole('button');
+       expect(button.classList.contains('bg-gray-200')).toBe(true);
+       
+       rerender({ label: 'Ghost', variant: 'ghost' });
+       button = getByRole('button');
+       expect(button.classList.contains('bg-transparent')).toBe(true);
+     });
+     
+     it('handles click events', async () => {
+       const handleClick = vi.fn();
+       const { getByRole } = render(Button, {
+         props: { label: 'Click me' }
+       });
+       
+       const button = getByRole('button');
+       button.addEventListener('click', handleClick);
+       
+       await fireEvent.click(button);
+       expect(handleClick).toHaveBeenCalledTimes(1);
+     });
+     
+     it('disables the button when disabled is true', () => {
+       const { getByRole } = render(Button, {
+         props: { label: 'Disabled', disabled: true }
+       });
+       
+       const button = getByRole('button');
+       expect(button).toBeDisabled();
+       expect(button.classList.contains('opacity-50')).toBe(true);
+     });
+   });
+   ```
+   
+5. Add test script to package.json ☑️
+   ```json
+   {
+     "scripts": {
+       "test": "vitest run",
+       "test:watch": "vitest"
+     }
+   }
+   ```
+   
+6. Merge feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git merge --no-ff feature/component-tests -m "Merge feature/component-tests: Unit tests for components"
+   git push origin develop
+   git branch -d feature/component-tests
+   git push origin --delete feature/component-tests
+   ```
+
+### E.2. Step 11: Database Setup and Integration ☑️
+1. Create feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git checkout -b feature/database-setup
+   ```
+   
+2. Configure Drizzle ORM ☑️
+   ```typescript
+   // drizzle.config.ts
+   import { defineConfig } from 'drizzle-kit';
+
+   export default defineConfig({
+     schema: './src/lib/server/db/schema.ts',
+     out: './migrations',
+     dialect: 'sqlite',
+     dbCredentials: {
+       url: './data/sqlite.db'
+     }
+   });
+   ```
+   
+3. Generate and run migrations ☑️
+   ```bash
+   npx drizzle-kit generate
+   ```
+   
+4. Create database connection script ☑️
+   ```typescript
+   // src/lib/server/db/db.ts
+   import { drizzle } from 'drizzle-orm/better-sqlite3';
+   import Database from 'better-sqlite3';
+   import * as schema from './schema';
+
+   // Create a SQLite database connection
+   const sqlite = new Database('./data/sqlite.db');
+   export const db = drizzle(sqlite, { schema });
+
+   // Export the schema for use in type definitions
+   export * from './schema';
+   ```
+   
+5. Create migration utility ☑️
+   ```typescript
+   // src/lib/server/db/migrate.ts
+   import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
+   import { drizzle } from 'drizzle-orm/better-sqlite3';
+   import Database from 'better-sqlite3';
+   import * as path from 'path';
+   import * as fs from 'fs';
+
+   // Ensure the data directory exists
+   const dataDir = path.join(process.cwd(), 'data');
+   if (!fs.existsSync(dataDir)) {
+     fs.mkdirSync(dataDir, { recursive: true });
+   }
+
+   // Connect to the database and run migrations
+   const sqlite = new Database('./data/sqlite.db');
+   const db = drizzle(sqlite);
+
+   console.log('Running migrations...');
+   migrate(db, { migrationsFolder: './migrations' });
+   console.log('Migrations completed successfully!');
+   ```
+   
+6. Run migrations to set up the database ☑️
+   ```bash
+   npx tsx src/lib/server/db/migrate.ts
+   ```
+   
+7. Merge feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git merge --no-ff feature/database-setup -m "Merge feature/database-setup: SQLite database with Drizzle ORM"
+   git push origin develop
+   git branch -d feature/database-setup
+   git push origin --delete feature/database-setup
+   ```
+   
+### E.3. Step 12: Testing and Debugging ☑️
+1. Create feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git checkout -b feature/testing-debugging
+   ```
+   
+2. Add debugging configuration ☑️
+   ```json
+   // .vscode/launch.json
+   {
+     "version": "0.2.0",
+     "configurations": [
+       {
+         "type": "chrome",
+         "request": "launch",
+         "name": "Launch Chrome against localhost",
+         "url": "http://localhost:5173",
+         "webRoot": "${workspaceFolder}"
+       },
+       {
+         "type": "node",
+         "request": "launch",
+         "name": "Debug SvelteKit server",
+         "program": "${workspaceFolder}/node_modules/@sveltejs/kit/src/cli.js",
+         "args": ["dev"],
+         "cwd": "${workspaceFolder}",
+         "console": "integratedTerminal"
+       }
+     ]
+   }
+   ```
+   
+3. Add error logging middleware ☑️
+   ```typescript
+   // src/hooks.server.ts
+   // ...existing code...
+   
+   export const handleError = ({ error, event }) => {
+     console.error(`Error during request ${event.url.pathname}:`, error);
+     
+     // For development only, log more details
+     if (process.env['NODE_ENV'] !== 'production') {
+       console.error('Stack trace:', error.stack);
+       console.error('Request details:', {
+         method: event.request.method,
+         url: event.url.toString(),
+         headers: Object.fromEntries(event.request.headers)
+       });
+     }
+     
+     return {
+       message: 'An unexpected error occurred',
+       code: error.code || 'UNKNOWN'
+     };
+   };
+   ```
+   
+4. Merge feature branch ☑️
+   ```bash
+   git checkout develop
+   git pull --rebase origin develop
+   git merge --no-ff feature/testing-debugging -m "Merge feature/testing-debugging: Added debugging configuration"
+   git push origin develop
+   git branch -d feature/testing-debugging
+   git push origin --delete feature/testing-debugging
+   ```

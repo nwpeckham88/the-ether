@@ -929,8 +929,8 @@ We'll use the Gitflow workflow to manage our development process. This branching
    <button on:click={zoomIn}>Zoom In</button>
    <button on:click={zoomOut}>Zoom Out</button>
    ```
-   
-6. Merge feature branch
+    
+6 . Merge feature branch
    ```bash
    git checkout develop
    git pull --rebase origin develop

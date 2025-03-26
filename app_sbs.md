@@ -1,15 +1,15 @@
-# The Ether - Implementation Step-by-Step Plan
+# The Ether - Implementation Step-by-Step Plan ☐
 
-## Project Overview
+## A. Project Overview ☐
 The Ether is a protected local network sharing application built with SvelteKit. It enables users to create and share virtual "Ether Spaces" where they can place various types of content (text, links, images, documents) in a 3D environment accessible to other users on the local network.
 
-## Git Workflow: Gitflow Methodology and Best Practices
+## B. Git Workflow: Gitflow Methodology and Best Practices ☐
 
 We'll use the Gitflow workflow to manage our development process. This branching model provides a robust framework for managing larger projects.
 
-### Initial Git Setup
+### B.1. Initial Git Setup ☑️
 
-1. Initialize repository and create the develop branch:
+1. Initialize repository and create the develop branch: ☑️
    ```bash
    git init
    git add .
@@ -19,7 +19,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push -u origin develop
    ```
 
-2. Optional: Install git-flow extension for convenience
+2. Optional: Install git-flow extension for convenience ☐
    ```bash
    # On macOS
    brew install git-flow
@@ -31,20 +31,20 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git flow init
    ```
 
-### Branching Strategy
+### B.2. Branching Strategy ☐
 
-1. **Main Branches**:
+1. **Main Branches**: ☐
    - `main`: Production code only, contains the official release history
    - `develop`: Integration branch for features, contains pre-production code
 
-2. **Supporting Branches**:
+2. **Supporting Branches**: ☐
    - `feature/*`: For new feature development (branched from and merged back to `develop`)
    - `release/*`: For preparing new production releases (branched from `develop`, merged to both `develop` and `main`)
    - `hotfix/*`: For urgent fixes to production code (branched from `main`, merged to both `develop` and `main`)
 
-### Gitflow Best Practices
+### B.3. Gitflow Best Practices ☐
 
-1. **Commit Best Practices**:
+1. **Commit Best Practices**: ☐
    - Make atomic, focused commits (one logical change per commit)
    - Write meaningful commit messages with a clear structure:
      ```
@@ -62,7 +62,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    - Use `git commit --amend` for small fixes to your most recent commit
    - Use `git rebase -i` to clean up commits before pushing a feature
 
-2. **Merging Best Practices**:
+2. **Merging Best Practices**: ☐
    - Always use `--no-ff` when merging feature branches to preserve history:
      ```bash
      git checkout develop
@@ -71,26 +71,26 @@ We'll use the Gitflow workflow to manage our development process. This branching
    - This creates a merge commit even when a fast-forward would be possible
    - This makes it easier to see which commits were part of which feature
 
-3. **Pulling Best Practices**:
+3. **Pulling Best Practices**: ☐
    - Use rebase when pulling from develop or main to avoid unnecessary merge commits:
      ```bash
      git pull --rebase origin develop
      ```
    - Only do this for direct work on develop or main, not for feature branches
 
-4. **Branch Naming Conventions**:
+4. **Branch Naming Conventions**: ☐
    - `feature/feature-name` - For new features
    - `release/X.Y.Z` - For release preparation
    - `hotfix/issue-description` - For critical production fixes
 
-5. **Version Tagging**:
+5. **Version Tagging**: ☐
    - Tag all releases on the main branch with version numbers
    - Use semantic versioning (X.Y.Z)
    - Always include a descriptive message with tags
 
-### Feature Development Workflow
+### B.4. Feature Development Workflow ☐
 
-1. **Start a feature**:
+1. **Start a feature**: ☐
    ```bash
    # Without git-flow extensions
    git checkout develop
@@ -101,7 +101,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git flow feature start new-feature
    ```
 
-2. **During feature development**:
+2. **During feature development**: ☐
    - Make regular, atomic commits
    - Push feature branch regularly for backup/collaboration:
      ```bash
@@ -115,7 +115,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
      git rebase develop
      ```
 
-3. **Finish a feature**:
+3. **Finish a feature**: ☐
    ```bash
    # Without git-flow extensions
    git checkout develop
@@ -130,9 +130,9 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin develop
    ```
 
-### Release Workflow
+### B.5. Release Workflow ☐
 
-1. **Start a release**:
+1. **Start a release**: ☐
    ```bash
    # Without git-flow extensions
    git checkout develop
@@ -143,12 +143,12 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git flow release start 1.0.0
    ```
 
-2. **During release preparation**:
+2. **During release preparation**: ☐
    - Only fix bugs, polish documentation and prepare for release
    - No new features at this stage
    - Bump version numbers in relevant files
 
-3. **Finish a release**:
+3. **Finish a release**: ☐
    ```bash
    # Without git-flow extensions
    git checkout main
@@ -171,9 +171,9 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin main --tags
    ```
 
-### Hotfix Workflow
+### B.6. Hotfix Workflow ☐
 
-1. **Start a hotfix**:
+1. **Start a hotfix**: ☐
    ```bash
    # Without git-flow extensions
    git checkout main
@@ -184,7 +184,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git flow hotfix start critical-issue
    ```
 
-2. **Finish a hotfix**:
+2. **Finish a hotfix**: ☐
    ```bash
    # Without git-flow extensions
    git checkout main
@@ -207,10 +207,10 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin main --tags
    ```
 
-## Phase 1: Project Setup and Foundation (Week 1)
+## C. Phase 1: Project Setup and Foundation (Week 1) ☐
 
-### Step 1: Initial Project Setup
-1. Create new SvelteKit project
+### C.1. Step 1: Initial Project Setup ☐
+1. Create new SvelteKit project ☐
    ```bash
    # Using the latest SvelteKit CLI command (as of March 2025)
    npx sv create the-ether
@@ -218,7 +218,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    npm install
    ```
    
-2. Install core dependencies
+2. Install core dependencies ☐
    ```bash
    # Database
    npm install better-sqlite3 drizzle-orm drizzle-kit
@@ -247,7 +247,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    npm install -D vitest @testing-library/svelte
    ```
    
-3. Set up Gitflow branches
+3. Set up Gitflow branches ☐
    ```bash
    # Initialize the repository with a meaningful commit message
    git init
@@ -260,15 +260,15 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push -u origin develop
    ```
 
-### Step 2: Configure Build Tools
-1. Create feature branch
+### C.2. Step 2: Configure Build Tools ☐
+1. Create feature branch ☐
    ```bash
    git checkout develop
    git pull --rebase origin develop  # Always pull latest changes with rebase
    git checkout -b feature/build-config
    ```
    
-2. Set up Tailwind configuration (`tailwind.config.js`)
+2. Set up Tailwind configuration (`tailwind.config.js`) ☐
    ```javascript
    // If using shadcn-svelte, this will be mostly configured during init
    // For Skeleton UI, add the following
@@ -295,7 +295,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    };
    ```
    
-3. Configure Vite for bundle optimization (`vite.config.ts`)
+3. Configure Vite for bundle optimization (`vite.config.ts`) ☐
    ```typescript
    import { sveltekit } from '@sveltejs/kit/vite';
    import { defineConfig } from 'vite';
@@ -322,14 +322,14 @@ We'll use the Gitflow workflow to manage our development process. This branching
    });
    ```
    
-4. Set up TypeScript configuration (`tsconfig.json`)
+4. Set up TypeScript configuration (`tsconfig.json`) ☐
    ```bash
    # After making changes
    git add tsconfig.json
    git commit -m "Build: Configure TypeScript with strict mode and paths"
    ```
    
-5. Merge feature branch using no-fast-forward to preserve history
+5. Merge feature branch using no-fast-forward to preserve history ☐
    ```bash
    git checkout develop
    git pull --rebase origin develop
@@ -339,15 +339,15 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin --delete feature/build-config  # Clean up remote branch if it exists
    ```
 
-### Step 3: Create Database Schema
-1. Create feature branch
+### C.3. Step 3: Create Database Schema ☐
+1. Create feature branch ☐
    ```bash
    git checkout develop
    git pull --rebase origin develop
    git checkout -b feature/database-schema
    ```
    
-2. Define database tables using Drizzle ORM
+2. Define database tables using Drizzle ORM ☐
    ```typescript
    // src/lib/server/db/schema.ts
    import { sqliteTable, text, integer, blob } from 'drizzle-orm/sqlite-core';
@@ -417,7 +417,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    });
    ```
    
-3. Set up database migrations
+3. Set up database migrations ☐
    ```bash
    # Create drizzle.config.ts
    echo 'import type { Config } from "drizzle-kit";
@@ -444,7 +444,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git commit -m "Database: Set up migration configuration"
    ```
    
-4. Create database connection utility
+4. Create database connection utility ☐
    ```typescript
    // src/lib/server/db/index.ts
    import { drizzle } from 'drizzle-orm/better-sqlite3';
@@ -458,7 +458,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    export const db = drizzle(sqlite, { schema });
    ```
    
-5. Merge feature branch
+5. Merge feature branch ☐
    ```bash
    git checkout develop
    git pull --rebase origin develop
@@ -468,15 +468,15 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin --delete feature/database-schema
    ```
 
-### Step 4: Implement Authentication
-1. Create feature branch
+### C.4. Step 4: Implement Authentication ☐
+1. Create feature branch ☐
    ```bash
    git checkout develop
    git pull --rebase origin develop
    git checkout -b feature/auth
    ```
    
-2. Set up BetterAuth integration
+2. Set up BetterAuth integration ☐
    ```typescript
    // src/lib/server/auth.ts
    import { BetterAuth } from 'betterauth';
@@ -536,7 +536,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    });
    ```
    
-3. Create app.d.ts type declarations
+3. Create app.d.ts type declarations ☐
    ```typescript
    // src/app.d.ts
    import type { BetterAuth } from 'betterauth';
@@ -559,7 +559,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    export {};
    ```
    
-4. Implement server hooks for authentication
+4. Implement server hooks for authentication ☐
    ```typescript
    // src/hooks.server.ts
    import { auth } from '$lib/server/auth';
@@ -583,7 +583,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    };
    ```
    
-5. Create login and registration endpoints
+5. Create login and registration endpoints ☐
    ```typescript
    // src/routes/login/+page.server.ts
    import { fail, redirect } from '@sveltejs/kit';
@@ -672,7 +672,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    };
    ```
    
-6. Set up route protection
+6. Set up route protection ☐
    ```typescript
    // src/routes/app/+layout.server.ts
    import { redirect } from '@sveltejs/kit';
@@ -691,7 +691,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    };
    ```
    
-7. Merge feature branch
+7. Merge feature branch ☐
    ```bash
    git checkout develop
    git pull --rebase origin develop
@@ -701,15 +701,15 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin --delete feature/auth
    ```
 
-### Step 5: Create Base Layout and Pages
-1. Create feature branch
+### C.5. Step 5: Create Base Layout and Pages ☐
+1. Create feature branch ☐
    ```bash
    git checkout develop
    git pull --rebase origin develop
    git checkout -b feature/base-ui
    ```
    
-2. Create base layout with UI components
+2. Create base layout with UI components ☐
    ```svelte
    <!-- src/routes/+layout.svelte -->
    <script lang="ts">
@@ -736,7 +736,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    </AppShell>
    ```
    
-3. Set up navigation structure
+3. Set up navigation structure ☐
    ```svelte
    <!-- src/lib/components/ui/nav-sidebar.svelte -->
    <script lang="ts">
@@ -761,7 +761,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    </nav>
    ```
    
-4. Implement redirect logic for authenticated/unauthenticated users
+4. Implement redirect logic for authenticated/unauthenticated users ☐
    ```typescript
    // src/routes/+page.server.ts
    import { redirect } from '@sveltejs/kit';
@@ -797,7 +797,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    </div>
    ```
    
-5. Merge feature branch
+5. Merge feature branch ☐
    ```bash
    git checkout develop
    git pull --rebase origin develop
@@ -807,17 +807,17 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin --delete feature/base-ui
    ```
 
-## Phase 2: Core Application Features (Week 2)
+## D. Phase 2: Core Application Features (Week 2) ☐
 
-### Step 6: Create the Ether Space Component
-1. Create feature branch
+### D.1. Step 6: Create the Ether Space Component ☐
+1. Create feature branch ☐
    ```bash
    git checkout develop
    git pull --rebase origin develop
    git checkout -b feature/ether-space
    ```
    
-2. Build 3D card component with @animotion/motion
+2. Build 3D card component with @animotion/motion ☐
    ```svelte
    <!-- src/lib/components/ether/ether-space.svelte -->
    <script lang="ts">
@@ -858,7 +858,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    </div>
    ```
    
-3. Implement the main Ether Space container
+3. Implement the main Ether Space container ☐
    ```svelte
    <!-- src/routes/app/[spaceId]/+page.svelte -->
    <script lang="ts">
@@ -879,7 +879,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    </EtherSpace>
    ```
    
-4. Set up basic keyboard navigation
+4. Set up basic keyboard navigation ☐
    ```typescript
    // src/lib/utils/keyboard-navigation.ts
    export function enableKeyboardNavigation(element: HTMLElement) {
@@ -897,7 +897,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    }
    ```
    
-5. Add viewport and zoom controls
+5. Add viewport and zoom controls ☐
    ```svelte
    <!-- src/lib/components/ether/ether-space.svelte -->
    <script lang="ts">
@@ -933,7 +933,7 @@ We'll use the Gitflow workflow to manage our development process. This branching
    <button on:click={zoomOut}>Zoom Out</button>
    ```
     
-6 . Merge feature branch
+6 . Merge feature branch ☐
    ```bash
    git checkout develop
    git pull --rebase origin develop
@@ -943,956 +943,14 @@ We'll use the Gitflow workflow to manage our development process. This branching
    git push origin --delete feature/ether-space
    ```
 
-### Step 7: Implement Content Positioning
-1. Create feature branch
+### D.2. Step 7: Implement Content Positioning ☐
+1. Create feature branch ☐
    ```bash
    git checkout develop
    git pull --rebase origin develop
    git checkout -b feature/content-positioning
    ```
    
-2. Set up HTML5 Drag and Drop functionality
+2. Set up HTML5 Drag and Drop functionality ☐
    ```svelte
    <!-- src/lib/components/ether/content-item.svelte -->
-   <script lang="ts">
-     import { animate } from '@animotion/motion';
-     import { onMount } from 'svelte';
-     
-     // Using Svelte 5 runes for props
-     let item = $props(Object);
-     
-     let element: HTMLElement;
-     
-     // Simple drag and drop without external library
-     function handleDragStart(e: DragEvent) {
-       e.dataTransfer?.setData('text/plain', item.id);
-     }
-     
-     onMount(() => {
-       // Simple animation with Motion One
-       animate(element, {
-         scale: [0.95, 1],
-         opacity: [0, 1]
-       }, {
-         duration: 0.3,
-         easing: 'ease-out'
-       });
-     });
-   </script>
-
-   <div
-     bind:this={element}
-     draggable="true"
-     on:dragstart={handleDragStart}
-     class="absolute p-4 rounded-lg bg-white/10 backdrop-blur-sm"
-     style="transform: translate({item.positionX}px, {item.positionY}px)
-            translateZ({item.positionZ}px);"
-   >
-     <slot />
-   </div>
-   ```
-   
-3. Create positioning system for 3D space
-   ```typescript
-   // src/lib/utils/space-positioning.ts
-   export function calculatePosition(x: number, y: number, z: number) {
-     // Simple positioning logic
-     return {
-       x: x,
-       y: y,
-       z: z
-     };
-   }
-   ```
-   
-4. Implement content item base component
-   ```svelte
-   <!-- src/lib/components/ether/content-item.svelte -->
-   <script lang="ts">
-     // Using Svelte 5 runes for props
-     let item = $props(Object);
-   </script>
-
-   <div class="content-item">
-     <slot />
-   </div>
-   ```
-   
-5. Add z-index management
-   ```svelte
-   <!-- src/lib/components/ether/content-item.svelte -->
-   <script lang="ts">
-     // Using Svelte 5 runes for props
-     let item = $props(Object);
-     
-     // Simple z-index management
-     let zIndex = $state(0);
-   </script>
-
-   <div class="content-item" style="z-index: {zIndex};">
-     <slot />
-   </div>
-   ```
-   
-6. Merge feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git merge --no-ff feature/content-positioning -m "Merge feature/content-positioning: Content positioning and drag/drop"
-   git push origin develop
-   git branch -d feature/content-positioning
-   git push origin --delete feature/content-positioning
-   ```
-
-### Step 8: Create the Store Pattern
-1. Create feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git checkout -b feature/store-pattern
-   ```
-   
-2. Implement optimized store creator for collections
-   ```typescript
-   // src/lib/stores/create-store.ts
-   import { writable } from 'svelte/store';
-   import type { Writable } from 'svelte/store';
-
-   // Simplified store creator with optional real-time sync
-   export function createStore<T>(
-     initial: T,
-     options?: {
-       sync?: boolean;
-       channel?: string;
-     }
-   ): Writable<T> {
-     const store = writable<T>(initial);
-     
-     if (options?.sync) {
-       // Only set up Socket.IO listeners if sync is needed
-       setupSync(store, options.channel);
-     }
-     
-     return store;
-   }
-   ```
-   
-3. Set up Ether spaces store
-   ```typescript
-   // src/lib/stores/ether-spaces-store.ts
-   import { createStore } from './create-store';
-
-   // Example usage
-   export const etherSpacesStore = createStore([], { sync: true, channel: 'ether-spaces' });
-   ```
-   
-4. Create content items store
-   ```typescript
-   // src/lib/stores/ether-content-store.ts
-   import { createStore } from './create-store';
-
-   // Example usage
-   export const etherContentStore = createStore([], { sync: true, channel: 'ether-content' });
-   ```
-   
-5. Add synced store option for real-time updates
-   ```typescript
-   // src/lib/stores/synced-store.ts
-   import { get } from 'svelte/store';
-   import { socket } from '$lib/socket-client';
-
-   // Function to set up real-time synchronization
-   export function setupSync(store: any, channel: string) {
-     socket.on(channel, (data: any) => {
-       store.set(data);
-     });
-     
-     store.subscribe((value: any) => {
-       if (socket.connected) {
-         socket.emit(channel, value);
-       }
-     });
-   }
-   ```
-   
-6. Merge feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git merge --no-ff feature/store-pattern -m "Merge feature/store-pattern: Store pattern with real-time sync"
-   git push origin develop
-   git branch -d feature/store-pattern
-   git push origin --delete feature/store-pattern
-   ```
-
-### Step 9: Set Up Socket.IO Communication
-1. Create feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git checkout -b feature/socket-io
-   ```
-   
-2. Configure Socket.IO client with optimized settings
-   ```typescript
-   // src/lib/socket-client.ts
-   import { io } from 'socket.io-client';
-
-   export const socket = io({
-     autoConnect: false,
-     transports: ['websocket'],
-     perMessageDeflate: true,
-     enablesXDR: true,
-     reconnectionDelay: 1000,
-     reconnectionDelayMax: 5000,
-     randomizationFactor: 0.5
-   });
-   ```
-   
-3. Implement server-side Socket.IO handler
-   ```typescript
-   // src/lib/server/socket.ts
-   import { Server } from 'socket.io';
-
-   export function createSocketServer(server: any) {
-     const io = new Server(server);
-     
-     io.on('connection', (socket) => {
-       console.log('Client connected');
-       
-       socket.on('disconnect', () => {
-         console.log('Client disconnected');
-       });
-     });
-   }
-   ```
-   
-4. Create room-based communication channels
-   ```typescript
-   // src/lib/server/socket.ts
-   import { Server } from 'socket.io';
-
-   export function createSocketServer(server: any) {
-     const io = new Server(server);
-     
-     io.on('connection', (socket) => {
-       console.log('Client connected');
-       
-       socket.on('join-room', (roomId) => {
-         socket.join(roomId);
-         console.log(`Client joined room: ${roomId}`);
-       });
-       
-       socket.on('disconnect', () => {
-         console.log('Client disconnected');
-       });
-     });
-   }
-   ```
-   
-5. Set up reconnection handling and message queue
-   ```typescript
-   // src/lib/socket-client.ts
-   import { io } from 'socket.io-client';
-
-   export const socket = io({
-     autoConnect: false,
-     transports: ['websocket'],
-     perMessageDeflate: true,
-     enablesXDR: true,
-     reconnectionDelay: 1000,
-     reconnectionDelayMax: 5000,
-     randomizationFactor: 0.5
-   });
-
-   let pendingMessages: Array<[string, any]> = [];
-
-   socket.on('connect', () => {
-     pendingMessages.forEach(([event, data]) => {
-       socket.emit(event, data);
-     });
-     pendingMessages = [];
-   });
-
-   export function emitWithRetry(event: string, data: any) {
-     if (socket.connected) {
-       socket.emit(event, data);
-     } else {
-       pendingMessages.push([event, data]);
-     }
-   }
-   ```
-   
-6. Merge feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git merge --no-ff feature/socket-io -m "Merge feature/socket-io: Socket.IO setup and communication"
-   git push origin develop
-   git branch -d feature/socket-io
-   git push origin --delete feature/socket-io
-   ```
-
-## Phase 3: Content Management (Week 3)
-
-### Step 10: Implement Content Types
-1. Create feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git checkout -b feature/content-types
-   ```
-   
-2. Create text content item component
-   ```svelte
-   <!-- src/lib/components/ether/text-item.svelte -->
-   <script lang="ts">
-     // Using Svelte 5 runes for props
-     let content = $props(String);
-   </script>
-
-   <div class="text-item">
-     <p>{content}</p>
-   </div>
-   ```
-   
-3. Implement link content item component
-   ```svelte
-   <!-- src/lib/components/ether/link-item.svelte -->
-   <script lang="ts">
-     // Using Svelte 5 runes for props
-     let url = $props(String);
-   </script>
-
-   <div class="link-item">
-     <a href={url} target="_blank" rel="noopener noreferrer">{url}</a>
-   </div>
-   ```
-   
-4. Build image content item with lazy loading
-   ```svelte
-   <!-- src/lib/components/ether/image-item.svelte -->
-   <script lang="ts">
-     import { onMount } from 'svelte';
-     
-     // Using Svelte 5 runes for props
-     let src = $props(String);
-     
-     let imageLoaded = $state(false);
-     
-     onMount(() => {
-       const img = new Image();
-       img.src = src;
-       img.onload = () => {
-         imageLoaded = true;
-       };
-     });
-   </script>
-
-   {#if imageLoaded}
-     <img {src} alt="Image" />
-   {:else}
-     <p>Loading image...</p>
-   {/if}
-   ```
-   
-5. Add document viewer with PDF.js integration
-   ```svelte
-   <!-- src/lib/components/ether/document-item.svelte -->
-   <script lang="ts">
-     import { onMount } from 'svelte';
-     
-     // Using Svelte 5 runes for props
-     let url = $props(String);
-     
-     let pdfLoaded = $state(false);
-     
-     onMount(async () => {
-       const pdfjsLib = await import('pdfjs-dist');
-       pdfjsLib.GlobalWorkerOptions.workerSrc = '//mozilla.github.io/pdf.js/build/pdf.worker.js';
-       
-       const loadingTask = pdfjsLib.getDocument(url);
-       loadingTask.promise.then(function(pdf) {
-         // You can now use the PDF document.
-         pdfLoaded = true;
-       });
-     });
-   </script>
-
-   {#if pdfLoaded}
-     <p>PDF Loaded</p>
-   {:else}
-     <p>Loading PDF...</p>
-   {/if}
-   ```
-   
-6. Merge feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git merge --no-ff feature/content-types -m "Merge feature/content-types: Implement content types"
-   git push origin develop
-   git branch -d feature/content-types
-   git push origin --delete feature/content-types
-   ```
-
-### Step 11: Set Up File Handling
-1. Create feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git checkout -b feature/file-handling
-   ```
-   
-2. Create server-side upload endpoints
-   ```typescript
-   // src/routes/api/upload/+server.ts
-   import { json } from '@sveltejs/kit';
-   import type { RequestHandler } from './$types';
-
-   export const POST: RequestHandler = async ({ request }) => {
-     const formData = await request.formData();
-     const file = formData.get('file') as File;
-     
-     if (!file) {
-       return json({ error: 'No file provided' }, { status: 400 });
-     }
-     
-     // Implement file saving logic here
-     return json({ message: 'File uploaded successfully' });
-   };
-   ```
-   
-3. Implement secure file storage utility
-   ```typescript
-   // src/lib/server/file-storage.ts
-   import fs from 'fs/promises';
-   import path from 'path';
-
-   const UPLOAD_DIR = 'uploads';
-
-   export async function saveFile(file: File) {
-     const buffer = Buffer.from(await file.arrayBuffer());
-     const filename = `${Date.now()}-${file.name}`;
-     const filepath = path.join(UPLOAD_DIR, filename);
-     
-     await fs.writeFile(filepath, buffer);
-     return filename;
-   }
-   ```
-   
-4. Set up image processing pipeline with Sharp
-   ```typescript
-   // src/lib/server/image-processor.ts
-   import sharp from 'sharp';
-
-   export async function processImage(filepath: string) {
-     // Example: Resize image to 500px width
-     await sharp(filepath)
-       .resize(500)
-       .toFile(`${filepath}-resized.jpg`);
-   }
-   ```
-   
-5. Create client-side file upload components
-   ```svelte
-   <!-- src/lib/components/ui/file-upload.svelte -->
-   <script lang="ts">
-     import { createEventDispatcher } from 'svelte';
-     
-     const dispatch = createEventDispatcher();
-     
-     function handleFileChange(event: Event) {
-       const files = (event.target as HTMLInputElement).files;
-       if (files && files.length > 0) {
-         dispatch('upload', files[0]);
-       }
-     }
-   </script>
-
-   <input type="file" on:change={handleFileChange} />
-   ```
-   
-6. Merge feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git merge --no-ff feature/file-handling -m "Merge feature/file-handling: File upload and processing"
-   git push origin develop
-   git branch -d feature/file-handling
-   git push origin --delete feature/file-handling
-   ```
-
-### Step 12: Implement Real-time Synchronization
-1. Create feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git checkout -b feature/realtime-sync
-   ```
-   
-2. Add event handlers for content changes
-   ```typescript
-   // src/lib/stores/ether-content-store.ts
-   import { createStore } from './create-store';
-   import { socket } from '$lib/socket-client';
-
-   const contentStore = createStore([], { sync: true, channel: 'ether-content' });
-
-   socket.on('content-updated', (data) => {
-     contentStore.update((items) => {
-       // Update logic here
-       return items;
-     });
-   });
-
-   export default contentStore;
-   ```
-   
-3. Set up position update broadcasting
-   ```typescript
-   // src/lib/components/ether/content-item.svelte
-   <script lang="ts">
-     import { emitWithRetry } from '$lib/socket-client';
-     
-     function handlePositionChange(x: number, y: number, z: number) {
-       emitWithRetry('position-update', {
-         itemId: item.id,
-         position: { x, y, z }
-       });
-     }
-   </script>
-   ```
-   
-4. Implement user presence indicators
-   ```typescript
-   // src/lib/components/ether/ether-space.svelte
-   <script lang="ts">
-     import { socket } from '$lib/socket-client';
-     
-     let usersPresent = $state([]);
-     
-     socket.on('user-joined', (userId) => {
-       usersPresent = [...usersPresent, userId];
-     });
-   </script>
-   ```
-   
-5. Add conflict resolution for concurrent edits
-   ```typescript
-   // src/lib/stores/ether-content-store.ts
-   import { createStore } from './create-store';
-   import { socket } from '$lib/socket-client';
-
-   const contentStore = createStore([], { sync: true, channel: 'ether-content' });
-
-   socket.on('content-updated', (data) => {
-     contentStore.update((items) => {
-       // Conflict resolution logic here
-       return items;
-     });
-   });
-
-   export default contentStore;
-   ```
-   
-6. Merge feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git merge --no-ff feature/realtime-sync -m "Merge feature/realtime-sync: Real-time synchronization"
-   git push origin develop
-   git branch -d feature/realtime-sync
-   git push origin --delete feature/realtime-sync
-   ```
-
-### Step 13: Create Content Management UI
-1. Create feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git checkout -b feature/content-management-ui
-   ```
-   
-2. Implement speed dial for content creation
-   ```svelte
-   <!-- src/lib/components/ether/speed-dial.svelte -->
-   <script lang="ts">
-     import { createEventDispatcher } from 'svelte';
-     
-     const dispatch = createEventDispatcher();
-     
-     // Using Svelte 5 runes for state
-     let isOpen = $state(false);
-     
-     function toggleOpen() {
-       isOpen = !isOpen;
-     }
-     
-     function addContent(type: string) {
-       dispatch('add', { type });
-       isOpen = false;
-     }
-   </script>
-
-   <div class="speed-dial">
-     <button 
-       class="speed-dial-button"
-       on:click={toggleOpen}
-     >
-       {isOpen ? 'Close' : 'Add Content'}
-     </button>
-     
-     {#if isOpen}
-       <div class="speed-dial-menu">
-         <button on:click={() => addContent('text')}>Text</button>
-         <button on:click={() => addContent('link')}>Link</button>
-         <button on:click={() => addContent('image')}>Image</button>
-         <button on:click={() => addContent('document')}>Document</button>
-       </div>
-     {/if}
-   </div>
-   ```
-   
-3. Add context menu for content items
-   ```svelte
-   <!-- src/lib/components/ether/content-item.svelte -->
-   <script lang="ts">
-     // Using Svelte 5 runes for state
-     let showMenu = $state(false);
-     
-     function toggleContextMenu() {
-       showMenu = !showMenu;
-     }
-     
-     function editItem() {
-       // Edit logic
-       showMenu = false;
-     }
-     
-     function deleteItem() {
-       // Delete logic
-       showMenu = false;
-     }
-   </script>
-
-   <div>
-     <!-- Item content -->
-     <slot />
-     
-     <button on:click={toggleContextMenu} class="context-menu-trigger">⋮</button>
-     
-     {#if showMenu}
-       <div class="context-menu">
-         <button on:click={editItem}>Edit</button>
-         <button on:click={deleteItem}>Delete</button>
-       </div>
-     {/if}
-   </div>
-   ```
-   
-4. Create content editing interface
-   ```svelte
-   <!-- src/lib/components/ether/content-editor.svelte -->
-   <script lang="ts">
-     import { createEventDispatcher } from 'svelte';
-     
-     // Using Svelte 5 runes for props
-     let content = $props(String);
-     let contentType = $props(String);
-     
-     const dispatch = createEventDispatcher();
-     
-     // Using Svelte 5 runes for local state
-     let editedContent = $state(content);
-     
-     function saveChanges() {
-       dispatch('save', { content: editedContent });
-     }
-     
-     function cancel() {
-       dispatch('cancel');
-     }
-   </script>
-
-   <div class="editor">
-     {#if contentType === 'text'}
-       <textarea bind:value={editedContent}></textarea>
-     {:else if contentType === 'link'}
-       <input type="url" bind:value={editedContent} />
-     {/if}
-     
-     <div class="actions">
-       <button on:click={saveChanges}>Save</button>
-       <button on:click={cancel}>Cancel</button>
-     </div>
-   </div>
-   ```
-   
-5. Implement content deletion with confirmation
-   ```typescript
-   // src/lib/components/ether/content-item.svelte
-   <script lang="ts">
-     import { createEventDispatcher } from 'svelte';
-     
-     const dispatch = createEventDispatcher();
-     
-     function deleteItem() {
-       if (confirm('Are you sure you want to delete this item?')) {
-         dispatch('delete', { id: item.id });
-       }
-     }
-   </script>
-   ```
-   
-6. Merge feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git merge --no-ff feature/content-management-ui -m "Merge feature/content-management-ui: Content management UI"
-   git push origin develop
-   git branch -d feature/content-management-ui
-   git push origin --delete feature/content-management-ui
-   ```
-
-### Step 14: Prepare Alpha Release
-1. Create release branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git checkout -b release/alpha
-   ```
-   
-2. Update version numbers
-   ```json
-   // package.json
-   {
-     "name": "the-ether",
-     "version": "0.1.0-alpha",
-     "private": true,
-     // ... other package.json content
-   }
-   ```
-   
-3. Fix any minor bugs
-   ```typescript
-   // Example bug fix
-   // src/lib/socket-client.ts
-   socket.on('connect_error', (error) => {
-     console.error('Socket connection error:', error);
-     // Implement fallback for offline mode
-   });
-   ```
-   
-4. Update documentation
-   ```markdown
-   <!-- README.md -->
-   # The Ether - Alpha Release (v0.1.0-alpha)
-   
-   A protected local network sharing application built with SvelteKit.
-   
-   ## Features
-   - User authentication with BetterAuth
-   - 3D space for content placement
-   - Real-time synchronization
-   - Multiple content types (text, links, images, documents)
-   
-   ## Installation
-   ```bash
-   npm install
-   npm run dev
-   ```
-   
-   ## Alpha Release Notes
-   This is an alpha release with core functionality. Some features may be incomplete.
-   
-   ### Known Issues
-   - PDF viewing requires external PDF.js worker configuration
-   - ...
-   ```
-   
-5. Merge release branch
-   ```bash
-   # Merge to main
-   git checkout main
-   git merge --no-ff release/alpha -m "Release v0.1.0-alpha"
-   git tag -a v0.1.0-alpha -m "Alpha Release"
-   git push origin main --tags
-   
-   # Merge back to develop
-   git checkout develop
-   git merge --no-ff release/alpha -m "Merge alpha release back to develop"
-   git push origin develop
-   
-   # Delete the release branch
-   git branch -d release/alpha
-   git push origin --delete release/alpha
-   ```
-
-## Phase 4: Polish and Optimization (Week 4)
-
-### Step 15: Optimize Performance
-1. Create feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git checkout -b feature/performance-optimization
-   ```
-   
-2. Implement lazy loading for components
-   ```typescript
-   // src/lib/utils/lazy-load.ts
-   export async function lazyLoadComponent(path: string) {
-     const component = await import(path);
-     return component.default;
-   }
-   
-   // Usage example in a parent component:
-   // <script>
-   //   import { lazyLoadComponent } from '$lib/utils/lazy-load';
-   //   let DocumentViewer;
-   //   
-   //   onMount(async () => {
-   //     DocumentViewer = await lazyLoadComponent('$lib/components/ether/document-item.svelte');
-   //   });
-   // </script>
-   ```
-   
-3. Set up code splitting and dynamic imports
-   ```javascript
-   // vite.config.js
-   export default defineConfig({
-     plugins: [sveltekit()],
-     build: {
-       rollupOptions: {
-         output: {
-           manualChunks: {
-             'vendor': ['socket.io-client'],
-             'ui': ['@skeletonlabs/skeleton'],
-             'pdf': ['pdfjs-dist']
-           }
-         }
-       }
-     }
-   });
-   ```
-   
-4. Optimize bundle size
-   ```typescript
-   // src/routes/+layout.ts
-   export const prerender = true;
-   export const ssr = true;
-   
-   // Use dynamic imports for non-critical routes
-   // src/components/non-critical-feature.ts
-   const NonCriticalFeature = () => import('./NonCriticalFeature.svelte');
-   ```
-   
-5. Add performance monitoring
-   ```typescript
-   // src/lib/utils/performance-monitor.ts
-   export function logPerformance(label: string) {
-     if (typeof window !== 'undefined') {
-       const now = performance.now();
-       console.log(`${label}: ${now.toFixed(2)}ms`);
-     }
-   }
-   
-   // Usage
-   logPerformance('Component mounted');
-   
-   // For more sophisticated monitoring in production,
-   // consider tools like Web Vitals integration:
-   // import { onCLS, onFID, onLCP } from 'web-vitals';
-   // 
-   // function sendToAnalytics({ name, delta, id }) {
-   //   // Send to your analytics service
-   // }
-   // 
-   // onCLS(sendToAnalytics);
-   // onFID(sendToAnalytics);
-   // onLCP(sendToAnalytics);
-   ```
-   
-6. Merge feature branch
-   ```bash
-   git checkout develop
-   git pull --rebase origin develop
-   git merge --no-ff feature/performance-optimization -m "Merge feature/performance-optimization: Performance optimizations"
-   git push origin develop
-   git branch -d feature/performance-optimization
-   git push origin --delete feature/performance-optimization
-   ```
-
-### Step 16: Enhance User Experience
-1. Create feature branch
-2. Add loading states and progress indicators
-3. Implement error boundaries and fallbacks
-4. Create toast notifications for actions
-5. Add keyboard shortcuts for power users
-6. Merge feature branch
-
-### Step 17: Improve Accessibility
-1. Create feature branch
-2. Ensure proper keyboard navigation
-3. Add ARIA attributes for screen readers
-4. Implement focus management
-5. Support reduced motion preferences
-6. Merge feature branch
-
-### Step 18: Implement Responsive Design
-1. Create feature branch
-2. Create mobile-friendly layout
-3. Implement touch input for mobile devices
-4. Optimize for different screen sizes
-5. Add container queries for component-level responsiveness
-6. Merge feature branch
-
-### Step 19: Set Up Testing
-1. Create feature branch
-2. Create unit tests for core components
-3. Implement integration tests for critical paths
-4. Add end-to-end tests for main user flows
-5. Set up continuous integration
-6. Merge feature branch
-
-### Step 20: Prepare for Beta Release
-1. Create release branch
-2. Update version numbers
-3. Fix any minor bugs
-4. Update documentation
-5. Perform final testing
-6. Merge release branch
-
-### Step 21: Prepare for Deployment
-1. Create feature branch
-2. Configure environment variables
-3. Set up production build pipeline
-4. Add security headers and CSP
-5. Implement error logging and monitoring
-6. Merge feature branch
-
-### Step 22: Final Release
-1. Create release branch
-2. Update version numbers
-3. Finalize documentation
-4. Perform thorough testing
-5. Merge release branch
-
-### Handling Hotfixes
-If critical issues are discovered in production:
-
-1. Create hotfix branch
-2. Fix the issue
-3. Merge hotfix branch
-
-## Future Enhancements
-
-1. Offline support with IndexedDB
-2. Progressive Web App features
-3. End-to-end encryption for sensitive content
-4. Advanced collaboration features
-5. Custom themes and personalization
-6. Integration with external storage services
-7. Mobile companion app with native features
-   ```

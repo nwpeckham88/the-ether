@@ -1,0 +1,18 @@
+{
+  "devDependencies": {
+    "@animotion/motion": "^2.0.1",
+    "@skeletonlabs/skeleton": "^3.1.1",
+    "@skeletonlabs/tw-plugin": "^0.4.1",
+    "@sveltejs/adapter-auto": "^5.0.0",
+    "@sveltejs/kit": "^2.20.2",
+    "@sveltejs/vite-plugin-svelte": "^5.0.3",
+    "@testing-library/svelte": "^5.2.7",
+    "pdfjs-dist": "^5.0.375",
+    "sharp": "^0.33.5",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "svelte": "^5.25.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  }
+}

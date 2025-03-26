@@ -6,8 +6,11 @@
   import type { EtherContent, EtherContentPosition } from '$lib/types/ether-content';
   import { convertToPositionObject } from '$lib/types/ether-content';
 
-  export let spaceId: string;
-  export let initialItems: ContentItem[] = [];
+  // Convert exports to props using Svelte 5 runes
+  let { spaceId, initialItems = [] } = $props<{
+    spaceId: string;
+    initialItems?: ContentItem[];
+  }>();
 
   const MIN_ZOOM = 0.5;
   const MAX_ZOOM = 2;
@@ -15,7 +18,7 @@
   const PAN_STEP = 30;
 
   // Initialize items with proper position objects
-  let items = $state(initialItems.map(item => convertToPositionObject(item)));
+  let items = $state(initialItems.map((item: ContentItem) => convertToPositionObject(item)));
   let container = $state<HTMLDivElement | null>(null);
   let zoomLevel = $state(1);
   let panX = $state(0);
@@ -66,7 +69,7 @@
   // This function can be used for both local updates and socket events
   function updateItemPosition(id: string, newPosition: EtherContentPosition) {
     // Find and update the item locally
-    const index = items.findIndex(item => item.id === id);
+    const index = items.findIndex((item: ContentItem) => item.id === id);
     if (index >= 0 && items[index]?.id) {
       // Create a new object with all required properties to satisfy EtherContent type
       const updatedItem = { 

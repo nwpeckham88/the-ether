@@ -7,7 +7,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
     throw redirect(302, '/login');
   }
   
-  // Return user data for use in routes
+  // Return user data for client components
   return {
     user: locals.user
   };
